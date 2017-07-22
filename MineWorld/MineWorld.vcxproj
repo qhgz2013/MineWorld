@@ -82,6 +82,8 @@
     </ClCompile>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mineworld.cpp" />
+    <ClCompile Include="nbt.cpp" />
+    <ClCompile Include="pointer_check.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
@@ -109,6 +111,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_mineworld.h" />
+    <ClInclude Include="nbt.h" />
+    <ClInclude Include="pointer_check.h" />
+    <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.qrc">

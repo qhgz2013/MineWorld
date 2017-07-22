@@ -38,6 +38,9 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Global Pointer Management">
+      <UniqueIdentifier>{eabd1dc4-1f12-4f4e-a5b9-70ba6edcab73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -55,6 +58,12 @@
     <ClCompile Include="GeneratedFiles\qrc_mineworld.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="nbt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pointer_check.cpp">
+      <Filter>Global Pointer Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
@@ -70,6 +79,15 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_mineworld.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nbt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pointer_check.h">
+      <Filter>Global Pointer Management</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
