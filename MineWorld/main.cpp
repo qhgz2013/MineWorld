@@ -17,10 +17,11 @@ int main(int argc, char *argv[])
 
 	//test for debug new
 	Tag* test = debug_new TagInt("hello", 233);
-	{
-		TagInt t2(*(TagInt*)test);
-	}
+	int* data;
+	test->GetData((void*&)data);
+	debug_delete data;
 	debug_delete test;
 	auto ptr_result = get_leak_memory();
+	
 	return result;
 }

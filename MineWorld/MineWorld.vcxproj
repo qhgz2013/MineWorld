@@ -68,6 +68,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="chunkloader.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_mineworld.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -110,7 +111,9 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="chunkloader.h" />
     <ClInclude Include="GeneratedFiles\ui_mineworld.h" />
+    <ClInclude Include="mineworld-const.h" />
     <ClInclude Include="nbt.h" />
     <ClInclude Include="pointer_check.h" />
     <ClInclude Include="util.h" />

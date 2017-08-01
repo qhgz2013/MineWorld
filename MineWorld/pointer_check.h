@@ -28,6 +28,8 @@ void* operator new[](size_t size);
 void* operator new[](size_t size, const char* file, const int line);
 void operator delete(void* ptr);
 void operator delete[](void* ptr);
+void operator delete(void* ptr, const char* file, const int line);
+void operator delete[](void* ptr, const char* file, const int line);
 
 #define debug_new new(__FILE__, __LINE__)
 #define debug_delete delete

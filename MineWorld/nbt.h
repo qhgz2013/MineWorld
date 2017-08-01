@@ -33,7 +33,12 @@ public:
 	static void WriteTagFromStream(std::ostream& s, const Tag& tag);
 	static Tag* CopyTag(const Tag* tag);
 	virtual ~Tag() {}
+	std::string GetName() const { return _name; }
+	void SetName(std::string& name) { _name = name; }
+	TagType GetType() const { return _tagType; }
 
+	virtual void GetData(void*& data) const = 0;
+	virtual void SetData(const void*& data) = 0;
 };
 
 class TagInt : public Tag
@@ -44,6 +49,9 @@ public:
 	TagInt(const TagInt& tag) : Tag(TagType::Tag_Int, tag._name, debug_new int(*(int*)tag._data)) {}
 	~TagInt() { if (_data) debug_delete(int*)_data; _data = nullptr; }
 	TagInt& operator= (const TagInt& tag);
+
+	void GetData(void*& data) const { data = debug_new int(*(int*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(int*)_data; _data = debug_new int(*(int*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -58,6 +66,9 @@ public:
 	TagLong(const TagLong& tag) : Tag(TagType::Tag_Long, tag._name, debug_new int64_t(*(int64_t*)tag._data)) {}
 	~TagLong() { if (_data) debug_delete(int64_t*)_data; _data = nullptr; }
 	TagLong& operator= (const TagLong& tag);
+
+	void GetData(void*& data) const { data = debug_new int64_t(*(int64_t*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(int64_t*)_data; _data = debug_new int64_t(*(int64_t*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -72,6 +83,9 @@ public:
 	TagFloat(const TagFloat& tag) : Tag(TagType::Tag_Float, tag._name, debug_new float(*(float*)_data)) {}
 	~TagFloat() { if (_data) debug_delete(float*)_data; _data = nullptr; }
 	TagFloat& operator= (const TagFloat& tag);
+
+	void GetData(void*& data) const { data = debug_new float(*(float*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(float*)_data; _data = debug_new float(*(float*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -86,6 +100,9 @@ public:
 	TagDouble(const TagDouble& tag) : Tag(TagType::Tag_Double, tag._name, debug_new double(*(double*)_data)) {}
 	~TagDouble() { if (_data) debug_delete(double*)_data; _data = nullptr; }
 	TagDouble& operator= (const TagDouble& tag);
+
+	void GetData(void*& data) const { data = debug_new double(*(double*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(double*)_data; _data = debug_new double(*(double*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -101,6 +118,9 @@ public:
 	TagUInt(const TagUInt& tag) : Tag(TagType::Tag_UInt, tag._name, debug_new uint32_t(*(uint32_t*)_data)) {}
 	~TagUInt() { if (_data) debug_delete(uint32_t*)_data; _data = nullptr; }
 	TagUInt& operator= (const TagUInt& tag);
+
+	void GetData(void*& data) const { data = debug_new uint32_t(*(uint32_t*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(uint32_t*)_data; _data = debug_new uint32_t(*(uint32_t*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -116,6 +136,9 @@ public:
 	TagULong(const TagULong& tag) : Tag(TagType::Tag_ULong, tag._name, debug_new uint64_t(*(uint64_t*)_data)) {}
 	~TagULong() { if (_data) debug_delete(uint64_t*)_data; _data = nullptr; }
 	TagULong& operator= (const TagULong& tag);
+
+	void GetData(void*& data) const { data = debug_new uint64_t(*(uint64_t*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(uint64_t*)_data; _data = debug_new uint64_t(*(uint64_t*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -131,6 +154,9 @@ public:
 	TagByte(const TagByte& tag) : Tag(TagType::Tag_Byte, tag._name, debug_new char(*(char*)_data)) {}
 	~TagByte() { if (_data) debug_delete(char*)_data; _data = nullptr; }
 	TagByte& operator= (const TagByte& tag);
+
+	void GetData(void*& data) const { data = debug_new char(*(char*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(char*)_data; _data = debug_new char(*(char*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -146,6 +172,9 @@ public:
 	TagString(const TagString& tag) : Tag(TagType::Tag_String, tag._name, debug_new std::string(*(std::string*)_data)) {}
 	~TagString() { if (_data) debug_delete(std::string*)_data; _data = nullptr; }
 	TagString& operator= (const TagString& tag);
+
+	void GetData(void*& data) const { data = debug_new std::string(*(std::string*)_data); }
+	void SetData(const void*& data) { if (_data) debug_delete(std::string*)_data; _data = debug_new std::string(*(std::string*)_data); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -171,6 +200,11 @@ public:
 	}
 	~TagByteArray() { if (_data) debug_delete[](char*)_data; _data = nullptr; }
 	TagByteArray& operator= (const TagByteArray& tag);
+
+	void GetData(void*& data) const { data = debug_new char[_count]; if (_data) memcpy_s(data, _count, _data, _count); }
+	char GetData(int index) { if (_data && index >= 0 && index < _count) return ((char*)_data)[index]; return '\0'; }
+	void SetData(const void*& data) { SetData(data, 1); }
+	void SetData(const void*& data, int count) { if (_data) debug_delete[](char*)_data; _data = debug_new char[count]; _count = count; memcpy_s(_data, _count, data, _count); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;
@@ -205,6 +239,50 @@ public:
 		_data = nullptr;
 	}
 	TagList& operator= (const TagList& tag);
+
+	void GetData(void*& data) const
+	{
+		data = debug_new TagContainer;
+		if (_data)
+			for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+			{
+				((TagContainer*)_data)->push_back(Tag::CopyTag(*i));
+			}
+	}
+	Tag* GetData(std::string& name) const
+	{
+		if (_data)
+			for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+			{
+				if ((*i)->GetName() == name)
+					return Tag::CopyTag(*i);
+			}
+		return nullptr;
+	}
+	void SetData(const void*& data)
+	{
+		if (_data)
+		{
+			for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+			{
+				debug_delete *i;
+			}
+			debug_delete(TagContainer*)_data;
+		}
+		_data = debug_new TagContainer;
+		for (auto i = ((TagContainer*)data)->begin(); i != ((TagContainer*)data)->end(); i++)
+		{
+			((TagContainer*)_data)->push_back(Tag::CopyTag(*i));
+		}
+	}
+	void SetData(Tag* tag);
+
+	void Clear() { if (_data)((TagContainer*)_data)->clear(); }
+	bool Exists(std::string& tagname) const;
+	void AddData(Tag* tag);
+	Tag* GetData(int index) const;
+	Tag* operator[](int index) const { return GetData(index); }
+	Tag* operator[](std::string& name) const { return GetData(name); }
 protected:
 	void _read_data(std::istream& s);
 	void _write_data(std::ostream& s) const;

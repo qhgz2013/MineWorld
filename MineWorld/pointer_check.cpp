@@ -97,7 +97,7 @@ uint64_t allocated_block = 0; //已经申请的内存的数量
 *             | pointer | --> ...... --> | pointer | -- x -> | pointer | -- x -> | pointer | --> ......   --> | pointer | --> nullptr
 * nullptr <-- |    I    | <-- `````` <-- |   x-1   | <- x -- |    x    | <- x -- |   x+1   | <-- ``````   <-- |    n    |
 *             +=========+                +=========+         +=========+         +=========+                  +=========+
-*	                                           A                                    |
+*                                              A                                    |
 *                                              +------------------------------------+
 *                                                            prev pointer
 *
@@ -227,6 +227,16 @@ void operator delete(void* ptr)
 void operator delete[](void * ptr)
 {
 	operator delete(ptr);
+}
+
+void operator delete(void * ptr, const char * file, const int line)
+{
+	operator delete(ptr);
+}
+
+void operator delete[](void * ptr, const char * file, const int line)
+{
+	operator delete[](ptr);
 }
 
 #endif

@@ -64,6 +64,9 @@
     <ClCompile Include="pointer_check.cpp">
       <Filter>Global Pointer Management</Filter>
     </ClCompile>
+    <ClCompile Include="chunkloader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
@@ -88,6 +91,12 @@
     </ClInclude>
     <ClInclude Include="pointer_check.h">
       <Filter>Global Pointer Management</Filter>
+    </ClInclude>
+    <ClInclude Include="chunkloader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mineworld-const.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

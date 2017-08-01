@@ -450,7 +450,7 @@ TagList & TagList::operator=(const TagList & tag)
 		{
 			_data = debug_new TagContainer;
 			TagContainer* data = (TagContainer*)_data;
-			for (auto i = ((TagContainer*)tag._data)->begin; i != ((TagContainer*)tag._data)->end(); i++)
+			for (auto i = ((TagContainer*)tag._data)->begin(); i != ((TagContainer*)tag._data)->end(); i++)
 				data->push_back(Tag::CopyTag(*i));
 		}
 	else
@@ -465,6 +465,54 @@ TagList & TagList::operator=(const TagList & tag)
 		else
 			_data = nullptr;
 	return *this;
+}
+
+void TagList::SetData(Tag * tag)
+{
+	if (_data)
+		for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+		{
+			if ((*i)->GetName() == tag->GetName())
+			{
+				*i = Tag::CopyTag(tag);
+				return;
+			}
+		}
+
+	if (!_data) _data = debug_new TagContainer;
+	((TagContainer*)_data)->push_back(Tag::CopyTag(tag));
+}
+
+bool TagList::Exists(std::string & tagname) const
+{
+	if (_data)
+		for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+		{
+			if ((*i)->GetName() == tagname)
+				return true;
+		}
+	return false;
+}
+
+void TagList::AddData(Tag * tag)
+{
+	if (!_data)
+		_data = debug_new TagContainer;
+	((TagContainer*)_data)->push_back(Tag::CopyTag(tag));
+}
+
+Tag * TagList::GetData(int index) const
+{
+	if (_data)
+	{
+		int ii = 0;
+		for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+		{
+			if (ii == index) return Tag::CopyTag(*i);
+			ii++;
+		}
+	}
+	return nullptr;
 }
 
 void TagList::_read_data(std::istream & s)
