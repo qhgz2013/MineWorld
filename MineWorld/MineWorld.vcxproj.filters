@@ -67,6 +67,9 @@
     <ClCompile Include="chunkloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mineworld-const.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">

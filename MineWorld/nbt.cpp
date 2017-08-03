@@ -9,10 +9,9 @@ void Tag::_write_header(std::ostream & s) const
 	uint16_t name_length = 0;
 	if (name_length_origin > UINT16_MAX) name_length = UINT16_MAX;
 	else name_length = (uint16_t)name_length_origin;
-	char length[2];
-	length[0] = (char)(name_length >> 8);
-	length[1] = (char)(name_length & 0xff);
+	char* length = ConvertToByteArray(name_length);
 	s.write(length, 2);
+	debug_delete[] length;
 	s.write(_name.c_str(), name_length);
 }
 
@@ -25,8 +24,9 @@ Tag * Tag::ReadTagFromStream(std::istream & s)
 	char name_length_data[2];
 	s.read(name_length_data, 2);
 	uint16_t name_length = ConvertFromByteArray<int>(name_length_data);
-	char* name = debug_new char[name_length];
+	char* name = debug_new char[name_length + 1];
 	s.read(name, name_length);
+	name[name_length] = 0;
 
 	switch (type)
 	{
@@ -368,8 +368,9 @@ void TagString::_read_data(std::istream & s)
 	char len_buf[4];
 	s.read(len_buf, 4);
 	uint32_t len = ConvertFromByteArray<uint32_t>(len_buf);
-	char* buf = debug_new char[len];
+	char* buf = debug_new char[len + 1];
 	s.read(buf, len);
+	buf[len] = 0;
 	_data = debug_new std::string(buf);
 	debug_delete[] buf;
 }
@@ -520,6 +521,15 @@ void TagList::_read_data(std::istream & s)
 	char len_data[4];
 	s.read(len_data, 4);
 	uint32_t len = ConvertFromByteArray<uint32_t>(len_data);
+	if (!_data) _data = debug_new TagContainer;
+	else 
+	{
+		for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
+		{
+			debug_delete *i;
+		}
+		((TagContainer*)_data)->clear();
+	}
 	for (uint32_t i = 0; i < len; i++)
 	{
 		((TagContainer*)_data)->push_back(Tag::ReadTagFromStream(s));

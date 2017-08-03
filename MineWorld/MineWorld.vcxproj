@@ -82,6 +82,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mineworld-const.cpp" />
     <ClCompile Include="mineworld.cpp" />
     <ClCompile Include="nbt.cpp" />
     <ClCompile Include="pointer_check.cpp" />
