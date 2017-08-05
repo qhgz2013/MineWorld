@@ -3,6 +3,7 @@
 #include <io.h>
 #include <direct.h>
 #include <fstream>
+#include <cmath>
 #include "pointer_check.h"
 
 using namespace std;
@@ -27,7 +28,7 @@ ChunkLoader::~ChunkLoader()
 	}
 }
 
-void ChunkLoader::GetChunkData(int cx, int cy, char * data[])
+void ChunkLoader::GetChunkData(int cx, int cy, char**& data)
 {
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(cx, cy);
@@ -35,6 +36,7 @@ void ChunkLoader::GetChunkData(int cx, int cy, char * data[])
 	char* raw_data = nullptr;
 	tag_data->GetData((void*&)raw_data);
 
+	data = debug_new char*[size];
 	for (int i = 0; i < size; i++)
 	{
 		data[i] = debug_new char[size];
@@ -53,15 +55,15 @@ char ChunkLoader::GetBlockData(int bx, int by)
 	char* raw_data = nullptr;
 	tag_data->GetData((void*&)raw_data);
 
-	char ret = raw_data[(bx & (size - 1)) + size * (by & (size - 1))];
+	char ret = raw_data[size * (bx - chunk_pos.first * size) + (by - chunk_pos.second * size)];
 	debug_delete[] raw_data;
 
 	return ret;
 }
 
-void ChunkLoader::SetChunkData(int cx, int cy, const char * data[])
+void ChunkLoader::SetChunkData(int cx, int cy, const char**& data)
 {
-	//storage sequence: 0,0 0,1 ... 0,n 1,0 1,1 ...
+	//storage sequence: 0,0 1,0 2,0 ... n,0 1,0 1,1 ...
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 	char* raw_data = debug_new char[size * size];
 	for (int i = 0; i < size; i++)
@@ -96,7 +98,7 @@ void ChunkLoader::SetBlockData(int bx, int by, char data)
 	if (!tag_data) return; //could not find tag, returned (this condition should be false commonly)
 
 	tag_data->GetData((void*&)raw_data);
-	raw_data[(bx & (size - 1)) + size * (by & (size - 1))] = data;
+	raw_data[size * (bx - chunk_pos.first * size) + (by - chunk_pos.second * size)] = data;
 	tag_data->SetData((const void*&)raw_data, size * size);
 	//modify flag
 	auto i1 = _loaded_data.begin();
@@ -111,6 +113,108 @@ void ChunkLoader::SetBlockData(int bx, int by, char data)
 		}
 	}
 	debug_delete[] raw_data;
+}
+
+void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
+{
+	if (bx1 > bx2)
+		swap(bx1, bx2);
+	if (by1 > by2)
+		swap(by1, by2);
+	int ylen = by2 - by1 + 1;
+	int xlen = bx2 - bx1 + 1;
+	if (xlen == 0 || ylen == 0) return;
+	auto c1 = _get_chunk_pos(bx1, by1);
+	auto c2 = _get_chunk_pos(bx2, by2);
+
+	data = debug_new char*[xlen];
+	for (int i = 0; i < xlen; i++) data[i] = debug_new char[ylen];
+
+	int chunk_size = 1 << DEFAULT_CHUNK_SIZE;
+	for (int x = c1.first; x <= c2.first; x++)
+	{
+		for (int y = c1.second; y <= c2.second; y++)
+		{
+			TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(x, y);
+			if (!tag_data) return;
+			char* raw_data = nullptr;
+			tag_data->GetData((void*&)raw_data);
+
+			//该区块的坐标数据
+			int bx_min_from_cx = x * chunk_size;
+			int by_min_from_cy = y * chunk_size;
+			int bx_max_from_cx = (x + 1)*chunk_size - 1;
+			int by_max_from_cy = (y + 1)*chunk_size - 1;
+
+			int bx_min = bx_min_from_cx > bx1 ? bx_min_from_cx : bx1; //max(bx1, bx_min_from_cx)
+			int bx_max = bx_max_from_cx < bx2 ? bx_max_from_cx : bx2; //min(bx2, bx_max_from_cx)
+			int by_min = by_min_from_cy > by1 ? by_min_from_cy : by1;
+			int by_max = by_max_from_cy < by2 ? by_max_from_cy : by2;
+
+			//复制数据
+			for (int t = bx_min; t <= bx_max; t++)
+			{
+				memcpy_s(
+					data[t - bx1] + (by_min - by1),
+					by_max - by_min + 1,
+					raw_data + (t - bx_min_from_cx) * chunk_size + (by_min - by_min_from_cy),
+					by_max - by_min + 1
+				);
+			}
+
+			debug_delete[] raw_data;
+		}
+	}
+}
+
+void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **& data)
+{
+	if (bx1 > bx2)
+		swap(bx1, bx2);
+	if (by1 > by2)
+		swap(by1, by2);
+	int ylen = by2 - by1 + 1;
+	int xlen = bx2 - bx1 + 1;
+	if (xlen == 0 || ylen == 0) return;
+	auto c1 = _get_chunk_pos(bx1, by1);
+	auto c2 = _get_chunk_pos(bx2, by2);
+
+	int chunk_size = 1 << DEFAULT_CHUNK_SIZE;
+
+	for (int x = c1.first; x <= c2.first; x++)
+	{
+		for (int y = c1.second; y <= c2.second; y++)
+		{
+			TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(x, y);
+			if (!tag_data) return;
+			char* raw_data = debug_new char[chunk_size*chunk_size];
+
+			//该区块的坐标数据
+			int bx_min_from_cx = x * chunk_size;
+			int by_min_from_cy = y * chunk_size;
+			int bx_max_from_cx = (x + 1)*chunk_size - 1;
+			int by_max_from_cy = (y + 1)*chunk_size - 1;
+
+			int bx_min = bx_min_from_cx > bx1 ? bx_min_from_cx : bx1; //max(bx1, bx_min_from_cx)
+			int bx_max = bx_max_from_cx < bx2 ? bx_max_from_cx : bx2; //min(bx2, bx_max_from_cx)
+			int by_min = by_min_from_cy > by1 ? by_min_from_cy : by1;
+			int by_max = by_max_from_cy < by2 ? by_max_from_cy : by2;
+
+			//复制数据
+			for (int t = bx_min; t <= bx_max; t++)
+			{
+				memcpy_s(
+					raw_data + (t - bx_min_from_cx) * chunk_size + (by_min - by_min_from_cy),
+					by_max - by_min + 1,
+					data[t - bx1] + (by_min - by1),
+					by_max - by_min + 1
+				);
+			}
+
+			tag_data->SetData((const void*&)raw_data, chunk_size * chunk_size);
+			debug_delete[] raw_data;
+		}
+	}
 }
 
 bool ChunkLoader::_chunk_generated(int chunk_x, int chunk_y) const
