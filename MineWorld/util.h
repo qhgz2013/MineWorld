@@ -16,7 +16,8 @@ char* ConvertToByteArray(const T _data)
 	memcpy_s(result, sizeof(T), temp_union.bytes, sizeof(T));
 	return result;
 }
-
+// convert byte array to T
+// return a T-type object (copy constructor is necessary if T is a class)
 template<typename T>
 T ConvertFromByteArray(const char* _data)
 {
@@ -30,3 +31,7 @@ T ConvertFromByteArray(const char* _data)
 	return temp_union.data;
 }
 
+// 获取从1970.1.1到现在经过的秒数 (精度: 100ns)
+double fGetCurrentTimestamp();
+// 获取从1970.1.1到现在经过的每100ns的数量 (精度: 100ns)
+uint64_t GetCurrentTimestamp();

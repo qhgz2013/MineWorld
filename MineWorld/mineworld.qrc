@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="MineWorld">
+    <qresource prefix="/MineWorld">
+        <file>icon.png</file>
     </qresource>
 </RCC>

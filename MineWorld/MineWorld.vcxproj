@@ -86,6 +86,7 @@
     <ClCompile Include="mineworld.cpp" />
     <ClCompile Include="nbt.cpp" />
     <ClCompile Include="pointer_check.cpp" />
+    <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
