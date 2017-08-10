@@ -74,6 +74,24 @@
     <ClCompile Include="util.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qclickablelabel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qclickablelabel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="qclickablelabel.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
+    <ClCompile Include="maploader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_maploader.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_maploader.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
@@ -84,6 +102,12 @@
     </CustomBuild>
     <CustomBuild Include="mineworld.ui">
       <Filter>gui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qclickablelabel.h">
+      <Filter>gui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="maploader.h">
+      <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

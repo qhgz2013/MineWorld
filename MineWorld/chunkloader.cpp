@@ -49,7 +49,7 @@ char ChunkLoader::GetBlockData(int bx, int by)
 {
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 
-	auto chunk_pos = _get_chunk_pos(bx, by);
+	auto chunk_pos = GetChunkPos(bx, by);
 	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(chunk_pos.first, chunk_pos.second);
 	if (!tag_data) return '\0';
 	char* raw_data = nullptr;
@@ -93,7 +93,7 @@ void ChunkLoader::SetBlockData(int bx, int by, char data)
 {
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 	char* raw_data = nullptr;
-	auto chunk_pos = _get_chunk_pos(bx, by);
+	auto chunk_pos = GetChunkPos(bx, by);
 	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(chunk_pos.first, chunk_pos.second);
 	if (!tag_data) return; //could not find tag, returned (this condition should be false commonly)
 
@@ -124,8 +124,8 @@ void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
 	int ylen = by2 - by1 + 1;
 	int xlen = bx2 - bx1 + 1;
 	if (xlen == 0 || ylen == 0) return;
-	auto c1 = _get_chunk_pos(bx1, by1);
-	auto c2 = _get_chunk_pos(bx2, by2);
+	auto c1 = GetChunkPos(bx1, by1);
+	auto c2 = GetChunkPos(bx2, by2);
 
 	data = debug_new char*[xlen];
 	for (int i = 0; i < xlen; i++) data[i] = debug_new char[ylen];
@@ -176,8 +176,8 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 	int ylen = by2 - by1 + 1;
 	int xlen = bx2 - bx1 + 1;
 	if (xlen == 0 || ylen == 0) return;
-	auto c1 = _get_chunk_pos(bx1, by1);
-	auto c2 = _get_chunk_pos(bx2, by2);
+	auto c1 = GetChunkPos(bx1, by1);
+	auto c2 = GetChunkPos(bx2, by2);
 
 	int chunk_size = 1 << DEFAULT_CHUNK_SIZE;
 
@@ -273,7 +273,7 @@ Tag * ChunkLoader::_generate_chunk_data(int chunk_x, int chunk_y)
 {
 	if (_callback_func)
 	{
-		Tag* tag = (*_callback_func)(chunk_x, chunk_y);
+		Tag* tag = (*_callback_func)(_parent, chunk_x, chunk_y);
 		return tag;
 	}
 	return nullptr;

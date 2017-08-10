@@ -8,8 +8,6 @@ using namespace std;
 int __main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
-	char* filename = "mineworld.qrc";
-	//Q_INIT_RESOURCE(filename);
 	MineWorld w;
 	w.show();
 	return a.exec();

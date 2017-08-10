@@ -2,6 +2,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_mineworld.h"
+#include "qclickablelabel.h"
+#include "maploader.h"
 
 class MineWorld : public QMainWindow
 {
@@ -41,19 +43,31 @@ private:
 	double* _ani_opacity;
 	//创建数据
 	void _init_ani_data();
+	void _dispose_ani_data();
 	//绘制
 	void _update_particle(QPainter& p);
 	//重新生成
 	void _refresh_particle(int index);
 
+	//UI
+	QClickableLabel* _title;
+	QClickableLabel* _version;
+	QClickableLabel* _start_game;
+	QClickableLabel* _exit;
+
+	//地图加载
+	MapLoader* _loader;
+
 protected:
 	//智障函数
 	void paintEvent(QPaintEvent* event);
-
+	void resizeEvent(QResizeEvent* event);
 signals:
+	void paintMap(QPainter& p, QWidget* parent);
 
-public slots:
+private slots:
 	//定时器回调函数
-	void background_color_change();
-
+	void _background_color_change();
+	void _on_exit_clicked();
+	void _on_start_game_clicked();
 };

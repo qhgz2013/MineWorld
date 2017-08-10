@@ -9,7 +9,8 @@
 extern const char* DEFAULT_SAVEDATA_PATH;
 //保存的文件名
 extern const char* DEFAULT_SAVEDATA_FMT;
-
+//保存的设置文件名
+extern const char* DEFAULT_SAVEDATA_SETTING_FMT;
 
 
 //chunk cache
