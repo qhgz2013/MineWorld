@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "util.h"
+#include <qevent.h>
 using namespace std;
 
 //static definations
@@ -61,7 +62,6 @@ MineWorld::MineWorld(QWidget *parent)
 	connect(_exit, SIGNAL(clicked()), this, SLOT(_on_exit_clicked()));
 	connect(_start_game, SIGNAL(clicked()), this, SLOT(_on_start_game_clicked()));
 
-	connect(this, SIGNAL(paintMap(QPainter&, QWidget*)), _loader, SLOT(RenderMap(QPainter&, QWidget*)));
 }
 
 MineWorld::~MineWorld()
@@ -176,8 +176,7 @@ void MineWorld::paintEvent(QPaintEvent * event)
 {
 	QPainter p(this);
 	double cur_time = fGetCurrentTimestamp();
-
-	//main title 
+	//main title
 	if (_status == 0)
 	{
 
@@ -206,6 +205,8 @@ void MineWorld::paintEvent(QPaintEvent * event)
 			p.fillRect(rect(), Qt::darkGray);
 			_ani_start_time[0] = cur_time;
 			_status = 2;
+			_loader->setWidth(width());
+			_loader->setHeight(height());
 			return;
 		}
 		double stat = (cur_time - _ani_start_time[0]) / ani_duration;
@@ -229,8 +230,8 @@ void MineWorld::paintEvent(QPaintEvent * event)
 	else if (_status == 2)
 	{
 		_status = 3;
+		update();
 		return;
-
 		//test loading animation
 		p.fillRect(rect(), Qt::darkGray);
 		const double ani_duration = 3.0;
@@ -245,7 +246,9 @@ void MineWorld::paintEvent(QPaintEvent * event)
 	}
 	else if (_status == 3)
 	{
-		emit paintMap(p, this);
+		//全屏重绘函数
+		if (event->rect().width() == width() && event->rect().height() == height())
+			_loader->renderMap(p, this);
 	}
 }
 
@@ -256,8 +259,27 @@ void MineWorld::resizeEvent(QResizeEvent * event)
 	_version->setGeometry((width() - _version->width()) >> 1, _version->geometry().y(), _version->width(), _version->height());
 	_title->setGeometry((width() - _title->width()) >> 1, _title->geometry().y(), _title->width(), _title->height());
 
-	_loader->setWidth(width());
-	_loader->setHeight(height());
+	if (_loader) _loader->setWidth(width());
+	if (_loader) _loader->setHeight(height());
+}
+
+void MineWorld::mousePressEvent(QMouseEvent * event)
+{
+}
+
+void MineWorld::mouseReleaseEvent(QMouseEvent * event)
+{
+}
+
+void MineWorld::mouseMoveEvent(QMouseEvent * event)
+{
+	QPointF pos = _loader->blockAt(event->pos());
+	QPoint ipos = QPoint(floor(pos.x()), floor(pos.y()));
+
+}
+
+void MineWorld::wheelEvent(QWheelEvent * event)
+{
 }
 
 void MineWorld::_on_exit_clicked()
@@ -279,6 +301,6 @@ void MineWorld::_on_start_game_clicked()
 void MineWorld::_background_color_change()
 {
 	//触发paint event
-	if (_status >= 0 || _status < 3)
+	if (_status >= 0 && _status < 3)
 		update();
 }

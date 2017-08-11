@@ -9,7 +9,8 @@ using namespace std;
 typedef char* pointer;
 pointer head_pointer = nullptr; //最后一个申请内存空间的地址
 uint64_t allocated_block = 0; //已经申请的内存的数量
-#define POINTER_CHECK_OUTPUT_DETAILED_INFO
+//#define POINTER_CHECK_OUTPUT_DETAILED_INFO
+
 /*
 * ------------------------------------------------
 *                 S T R U C T U R E

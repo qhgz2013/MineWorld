@@ -304,3 +304,6 @@ $RECYCLE.BIN/
 
 # QT generated files
 GeneratedFiles/
+
+# game savedata
+savedata/

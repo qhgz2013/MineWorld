@@ -2,13 +2,165 @@
 #include <string>
 #include <fstream>
 #include <qpainter.h>
-
+#include <qlist.h>
+#include <qfuture.h>
+#include <QtConcurrent\qtconcurrentmap.h>
+#include "util.h"
 using namespace std;
+
+double MapLoader::_animation_duration = 0.3;
+
+QImage MapLoader::_render_thumbnail(structA code)
+{
+	int size = (int)code.sender->_block_size;
+	QImage img(size, size, QImage::Format::Format_ARGB32);
+	QPainter p(&img);
+	p.fillRect(QRect(0, 0, size, size), QColor(245, 245, 245));
+	//unknown marker
+	if ((code.code & 0x60) == 0x60)
+	{
+		QBrush normal(QColor(99, 120, 213));
+		QBrush highlight(QColor(200, 210, 249));
+		QBrush shadow(QColor(64, 72, 104));
+		p.fillRect(0, 0, size, size, normal);
+		if (size > 4)
+		{
+			QPainterPath path1, path2;
+			path1.moveTo(0, 0);
+			path1.lineTo(size - 1, 0);
+			path1.lineTo(size - 2, 1);
+			path1.lineTo(1, 1);
+			path1.lineTo(1, size - 2);
+			path1.lineTo(0, size - 1);
+			path1.lineTo(0, 0);
+			path2.moveTo(size - 1, 0);
+			path2.lineTo(size - 1, size - 1);
+			path2.lineTo(0, size - 1);
+			path2.lineTo(1, size - 2);
+			path2.lineTo(size - 2, size - 2);
+			path2.lineTo(size - 2, 1);
+			path2.lineTo(size - 1, 0);
+			p.fillPath(path2, shadow);
+			p.fillPath(path1, highlight);
+		}
+		p.setFont(QFont("SimSun", 9));
+		p.setPen(Qt::black);
+		QTextOption opt(Qt::AlignVCenter | Qt::AlignHCenter);
+		char buf[5] = "?";
+		p.drawText(QRect(0, 0, size, size), buf, opt);
+		p.setPen(Qt::lightGray);
+	}
+	//clicked
+	else if (code.code & 0x20)
+	{
+		//mine
+		if (code.code & 0x10)
+		{
+			p.drawImage(QRect(0, 0, size, size), *code.sender->_mine_icon);
+			p.setPen(Qt::darkGray);
+			p.drawLine(0, 0, size - 1, 0);
+			p.drawLine(0, 0, 0, size - 1);
+		}
+		//common block
+		else if ((code.code & 0x0f) > 0 && (code.code & 0x0f) < 9)
+		{
+			p.setFont(QFont("SimSun", 9));
+			p.setPen(Qt::black);
+			QTextOption opt(Qt::AlignVCenter | Qt::AlignHCenter);
+			char buf[5];
+			sprintf_s(buf, "%d", code.code & 0x0f);
+			p.drawText(QRect(0, 0, size, size), buf, opt);
+			p.setPen(Qt::lightGray);
+			p.drawLine(0, 0, size - 1, 0);
+			p.drawLine(0, 0, 0, size - 1);
+		}
+		//empty block
+		else if ((code.code & 0x0f) == 0)
+		{
+			p.setPen(Qt::lightGray);
+			p.drawLine(0, 0, size - 1, 0);
+			p.drawLine(0, 0, 0, size - 1);
+		}
+	}
+	//flag marker
+	else if (code.code & 0x40)
+	{
+		QBrush normal(QColor(99, 120, 213));
+		QBrush highlight(QColor(200, 210, 249));
+		QBrush shadow(QColor(64, 72, 104));
+		p.fillRect(0, 0, size, size, normal);
+		if (size > 4)
+		{
+			QPainterPath path1, path2;
+			path1.moveTo(0, 0);
+			path1.lineTo(size - 1, 0);
+			path1.lineTo(size - 2, 1);
+			path1.lineTo(1, 1);
+			path1.lineTo(1, size - 2);
+			path1.lineTo(0, size - 1);
+			path1.lineTo(0, 0);
+			path2.moveTo(size - 1, 0);
+			path2.lineTo(size - 1, size - 1);
+			path2.lineTo(0, size - 1);
+			path2.lineTo(1, size - 2);
+			path2.lineTo(size - 2, size - 2);
+			path2.lineTo(size - 2, 1);
+			path2.lineTo(size - 1, 0);
+			p.fillPath(path2, shadow);
+			p.fillPath(path1, highlight);
+		}
+		p.setFont(QFont("SimSun", 9));
+		p.setPen(Qt::black);
+		QTextOption opt(Qt::AlignVCenter | Qt::AlignHCenter);
+		char buf[5] = "><";
+		p.drawText(QRect(0, 0, size, size), buf, opt);
+		p.setPen(Qt::lightGray);
+	}
+	//unclicked (including mine
+	else
+	{
+		QBrush normal(QColor(99, 120, 213));
+		QBrush highlight(QColor(200, 210, 249));
+		QBrush shadow(QColor(64, 72, 104));
+		p.fillRect(0, 0, size, size, normal);
+		if (size > 4)
+		{
+			QPainterPath path1, path2;
+			path1.moveTo(0, 0);
+			path1.lineTo(size - 1, 0);
+			path1.lineTo(size - 2, 1);
+			path1.lineTo(1, 1);
+			path1.lineTo(1, size - 2);
+			path1.lineTo(0, size - 1);
+			path1.lineTo(0, 0);
+			path2.moveTo(size - 1, 0);
+			path2.lineTo(size - 1, size - 1);
+			path2.lineTo(0, size - 1);
+			path2.lineTo(1, size - 2);
+			path2.lineTo(size - 2, size - 2);
+			path2.lineTo(size - 2, 1);
+			path2.lineTo(size - 1, 0);
+			p.fillPath(path2, shadow);
+			p.fillPath(path1, highlight);
+		}
+	}
+	return img;
+}
+
 Tag * MapLoader::_chunk_gen_cb(void* sender, int cx, int cy)
 {
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 	size *= size;
 	char* data = debug_new char[size];
+	//char structure:
+	//
+	// Generated Mask Data
+	// | Flag at this block      -+
+	// | | This block is clicked -+-> 1 1 represents that this is marked as unknown
+	// | | | This block is mine
+	// v v v v
+	// 0 0 0 0  |  0 0 0 0  <- Mask data (4 bit)
+	// flags    |  data
 	for (int i = 0; i < size; i++)
 	{
 		int pos = rand() % 100;
@@ -155,7 +307,7 @@ void MapLoader::_gen_mask(int cx, int cy)
 
 void MapLoader::_load_map(char **& data)
 {
-	QPointF pf1(_location), pf2(_location.x() + _width, _location.y() + _height);
+	QPointF pf1(_location), pf2((_location.x() + _width) / _block_size, (_location.y() + _height) / _block_size);
 	QPoint p1((int)floor(pf1.x()), (int)floor(pf1.y())), p2((int)ceil(pf2.x()), (int)ceil(pf2.y()));
 	auto c1 = _cl->GetChunkPos(p1.x(), p1.y());
 	auto c2 = _cl->GetChunkPos(p2.x(), p2.y());
@@ -182,6 +334,10 @@ MapLoader::MapLoader()
 	_cl = debug_new ChunkLoader(_chunk_gen_cb, this);
 	_location = QPointF(0, 0);
 	_block_size = 16;
+	_thumbnail_cache = nullptr;
+	_mine_icon = debug_new QImage(":/MineWorld/icon.png");
+	_width = 0;
+	_height = 0;
 	_load_config();
 }
 
@@ -189,49 +345,135 @@ MapLoader::~MapLoader()
 {
 	if (_cl) debug_delete _cl;
 	_cl = nullptr;
+	if (_mine_icon) debug_delete _mine_icon;
+	_mine_icon = nullptr;
+	if (_thumbnail_cache)
+	{
+		for (int i = 0; i < 256; i++)
+			debug_delete _thumbnail_cache[i];
+		debug_delete[] _thumbnail_cache;
+	}
+	_thumbnail_cache = nullptr;
 }
 
-void MapLoader::RenderMap(QPainter& p, QWidget* parent)
+void MapLoader::renderMap(QPainter& p, QWidget* form)
 {
-	char** data = nullptr;
-	_load_map(data);
+	if (!_thumbnail_cache)
+	{
+		QList<structA> ls;
+		for (int i = 0; i < 256; i++)
+			ls.append(structA{ this, (char)i });
+		QFuture<QImage> task = QtConcurrent::mapped(ls, _render_thumbnail);
+		task.waitForFinished();
+
+		_thumbnail_cache = debug_new QImage*[256];
+		auto i1 = ls.begin();
+		auto i2 = task.begin();
+		for (; i1 != ls.end(); i1++, i2++)
+			_thumbnail_cache[(unsigned char)i1->code] = debug_new QImage(*i2);
+	}
+
+	//merging map
+
 	int x1 = floor(_location.x());
-	int x2 = ceil(_location.x() + _width);
+	int x2 = ceil((_location.x() + _width) / _block_size);
 	int y1 = floor(_location.y());
-	int y2 = ceil(_location.y() + _height);
+	int y2 = ceil((_location.y() + _height) / _block_size);
 	int dx = x2 - x1;
 	int dy = y2 - y1;
+	char** data = nullptr;
+	_load_map(data);
 
-	p.setPen(Qt::black);
-	p.setFont(QFont("SimSun", 9));
-
-	QTextOption opt(Qt::AlignHCenter | Qt::AlignVCenter);
-	char buf[5];
 	for (int x = 0; x <= dx; x++)
 	{
 		for (int y = 0; y <= dy; y++)
 		{
-			QPoint pos = _translate_pos(QPointF(x1 + x, y1 + y));
-			p.drawRect(pos.x(), pos.y(), _block_size, _block_size);
-
-			if (data[x][y] & 0x10)
+			QImage* img = _thumbnail_cache[(data[x][y] & 0x7f)];
+			if (!img)
 			{
-				strcpy_s(buf, "*");
+				int test = 0;
 			}
-			else if (data[x][y] & 0x0f)
-			{
-				sprintf(buf, "%d", data[x][y] & 0x0f);
-			}
-			else
-			{
-				continue;
-			}
-
-			p.drawText(QRect(pos.x(), pos.y(), _block_size - 1, _block_size - 1), buf, opt);
+			QPoint pos = _translate_pos(QPointF(x, y));
+			p.drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
 		}
 	}
-
 	for (int i = 0; i <= dx; i++)
 		debug_delete[] data[i];
 	debug_delete[] data;
+
+}
+
+void MapLoader::renderAnimation(QPainter& p, QWidget* form)
+{
+	auto i1 = _start_time.begin();
+	auto i2 = _affect_block.begin();
+	auto i3 = _type.begin();
+	int size = (int)_block_size;
+	
+	//todo: using form->update() to render animation
+}
+
+void MapLoader::enterBlock(QPoint block)
+{
+	if (block.x() >= _location.x() + _width / _block_size || block.y() >= _location.y() + _height / _block_size) return;
+	auto i1 = _start_time.begin();
+	auto i2 = _affect_block.begin();
+	auto i3 = _type.begin();
+	for (; i2 != _affect_block.end(); i1++, i2++, i3++)
+	{
+		if (*i2 == block)
+		{
+			_start_time.erase(i1);
+			_affect_block.erase(i2);
+			_type.erase(i3);
+		}
+	}
+	double curtime = fGetCurrentTimestamp();
+	_start_time.push_back(curtime);
+	_affect_block.push_back(block);
+	_type.push_back(animationType::Enter);
+}
+
+void MapLoader::leaveBlock(QPoint block)
+{
+	if (block.x() >= _location.x() + _width / _block_size || block.y() >= _location.y() + _height / _block_size) return;
+	auto i1 = _start_time.begin();
+	auto i2 = _affect_block.begin();
+	auto i3 = _type.begin();
+	for (; i2 != _affect_block.end(); i1++, i2++, i3++)
+	{
+		if (*i2 == block)
+		{
+			_start_time.erase(i1);
+			_affect_block.erase(i2);
+			_type.erase(i3);
+		}
+	}
+	double curtime = fGetCurrentTimestamp();
+	_start_time.push_back(curtime);
+	_affect_block.push_back(block);
+	_type.push_back(animationType::Leave);
+}
+
+void MapLoader::clickBlock(QPoint block)
+{
+	if (block.x() >= _location.x() + _width / _block_size || block.y() >= _location.y() + _height / _block_size) return;
+	auto i1 = _start_time.begin();
+	auto i2 = _affect_block.begin();
+	auto i3 = _type.begin();
+	for (; i2 != _affect_block.end(); i1++, i2++, i3++)
+	{
+		if (*i2 == block)
+		{
+			_start_time.erase(i1);
+			_affect_block.erase(i2);
+			_type.erase(i3);
+		}
+	}
+	double curtime = fGetCurrentTimestamp();
+	_start_time.push_back(curtime);
+	_affect_block.push_back(block);
+	_type.push_back(animationType::Click);
+
+	//todo: bfs recursive click
 }

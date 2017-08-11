@@ -57,13 +57,16 @@ private:
 
 	//地图加载
 	MapLoader* _loader;
-
 protected:
-	//智障函数
+	//窗体绘制
 	void paintEvent(QPaintEvent* event);
+	//大小调整
 	void resizeEvent(QResizeEvent* event);
-signals:
-	void paintMap(QPainter& p, QWidget* parent);
+	//鼠标事件
+	void mousePressEvent(QMouseEvent* event); //单击
+	void mouseReleaseEvent(QMouseEvent* event); //释放
+	void mouseMoveEvent(QMouseEvent* event); //移动
+	void wheelEvent(QWheelEvent* event); //滑轮
 
 private slots:
 	//定时器回调函数
