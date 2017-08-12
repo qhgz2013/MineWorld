@@ -1,26 +1,26 @@
-#pragma once
+ï»¿#pragma once
 // nbt(named binary tag) class
 #include <string>
 #include <iostream>
 #include <list>
 #include "pointer_check.h"
 
-//TagÀàĞÍ
+//Tagç±»å‹
 enum class TagType
 {
 	Tag_Undefined,
 	Tag_Int, Tag_Long, Tag_Float, Tag_Double, Tag_UInt, Tag_ULong, Tag_Byte,
 	Tag_String, Tag_Byte_Array, Tag_List
 };
-//Tag³éÏó»ùÀà£¨Ö»ÄÜÍ¨¹ıÖ¸Õë½øĞĞ»ùÀà×ª»»£©
+//TagæŠ½è±¡åŸºç±»ï¼ˆåªèƒ½é€šè¿‡æŒ‡é’ˆè¿›è¡ŒåŸºç±»è½¬æ¢ï¼‰
 class Tag
 {
 protected:
-	//Ãû³Æ
+	//åç§°
 	std::string _name;
-	//ÀàĞÍ
+	//ç±»å‹
 	TagType _tagType;
-	//Êı¾İÖ¸Õë
+	//æ•°æ®æŒ‡é’ˆ
 	void* _data;
 
 	Tag() : _name(""), _tagType(TagType::Tag_Undefined), _data(nullptr) {}

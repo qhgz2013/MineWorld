@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <list>
 #include <ctime>
 #include "mineworld-const.h"
@@ -11,58 +11,58 @@ extern const int IO_MODE_WRITE;
 extern const int IO_MODE_READ;
 extern const int IO_MODE_READWRITE;
 
-//2Î¬charÊı×éÇø¿é¼ÓÔØ/»º´æ
+//2ç»´charæ•°ç»„åŒºå—åŠ è½½/ç¼“å­˜
 class ChunkLoader
 {
 	//char** data: data[x][y]
 public:
-	//²ÎÊı£ºÇø¿éÉú³ÉÊ±Ö´ĞĞµÄ»Øµ÷º¯Êı
+	//å‚æ•°ï¼šåŒºå—ç”Ÿæˆæ—¶æ‰§è¡Œçš„å›è°ƒå‡½æ•°
 	ChunkLoader(ChunkGenCallback cbf, void* parent = nullptr) : _callback_func(cbf), _parent(parent) {}
 	~ChunkLoader();
-	//»ñÈ¡Õû¸öÇø¿éÊı¾İ£¬ÓÉdata·µ»Ø£¨Ö¸Õë»á×Ô¶¯´´½¨£¬ĞèÒªÖğ¸öÉ¾³ı£©
+	//è·å–æ•´ä¸ªåŒºå—æ•°æ®ï¼Œç”±dataè¿”å›ï¼ˆæŒ‡é’ˆä¼šè‡ªåŠ¨åˆ›å»ºï¼Œéœ€è¦é€ä¸ªåˆ é™¤ï¼‰
 	void GetChunkData(int cx, int cy, char**& data);
-	//»ñÈ¡Ö¸¶¨·½¿éÊı¾İ
+	//è·å–æŒ‡å®šæ–¹å—æ•°æ®
 	char GetBlockData(int bx, int by);
-	//ÉèÖÃÕû¸öÇø¿éÊı¾İ£¨×¢Òâ£ºdataµÄÊı×é³¤¶È²»ÄÜĞ¡ÓÚ2^DEFAULT_CHUNK_SIZE ·ñÔò»áÄÚ´æ±¨´í£©
+	//è®¾ç½®æ•´ä¸ªåŒºå—æ•°æ®ï¼ˆæ³¨æ„ï¼šdataçš„æ•°ç»„é•¿åº¦ä¸èƒ½å°äº2^DEFAULT_CHUNK_SIZE å¦åˆ™ä¼šå†…å­˜æŠ¥é”™ï¼‰
 	void SetChunkData(int cx, int cy, const char**& data);
-	//ÉèÖÃÖ¸¶¨·½¿éÊı¾İ
+	//è®¾ç½®æŒ‡å®šæ–¹å—æ•°æ®
 	void SetBlockData(int bx, int by, char data);
-	//»ñÈ¡ºá×ø±êÎªbx1µ½bx2£¬×İ×ø±êÎªby1µ½by2µÄ·½¿éÊı¾İ
+	//è·å–æ¨ªåæ ‡ä¸ºbx1åˆ°bx2ï¼Œçºµåæ ‡ä¸ºby1åˆ°by2çš„æ–¹å—æ•°æ®
 	void GetBlockData(int bx1, int by1, int bx2, int by2, char**& data);
-	//ÉèÖÃºá×ø±êÎªbx1µ½bx2£¬×İ×ø±êÎªby1µ½by2µÄ·½¿éÊı¾İ
+	//è®¾ç½®æ¨ªåæ ‡ä¸ºbx1åˆ°bx2ï¼Œçºµåæ ‡ä¸ºby1åˆ°by2çš„æ–¹å—æ•°æ®
 	void SetBlockData(int bx1, int by1, int bx2, int by2, const char**& data);
 
-	//»ñÈ¡Ö¸¶¨×ø±êÏÂµÄÇø¿éÎ»ÖÃ
+	//è·å–æŒ‡å®šåæ ‡ä¸‹çš„åŒºå—ä½ç½®
 	static inline std::pair<int, int> GetChunkPos(int block_x, int block_y)
 	{
 		std::pair<int, int> ret_val = { block_x >> DEFAULT_CHUNK_SIZE, block_y >> DEFAULT_CHUNK_SIZE };
 		return ret_val;
 	}
 private:
-	//¼ÓÔØµÄ×ø±ê
+	//åŠ è½½çš„åæ ‡
 	std::list<std::pair<int, int>> _loaded_pos;
-	//¼ÓÔØµÄÇø¿éÊı¾İ
+	//åŠ è½½çš„åŒºå—æ•°æ®
 	std::list<Tag*> _loaded_data;
-	//Çø¿éÊÇ·ñ±»ĞŞ¸Ä
+	//åŒºå—æ˜¯å¦è¢«ä¿®æ”¹
 	std::list<bool> _data_changed;
-	//Çø¿é×îºó·ÃÎÊÊ±¼ä£¬ÓÃÓÚµ÷¶È¶øÒÑ
+	//åŒºå—æœ€åè®¿é—®æ—¶é—´ï¼Œç”¨äºè°ƒåº¦è€Œå·²
 	std::list<time_t> _last_access;
-	//Çø¿éÉú³ÉÊ±Ö´ĞĞµÄ»Øµ÷º¯Êı
+	//åŒºå—ç”Ÿæˆæ—¶æ‰§è¡Œçš„å›è°ƒå‡½æ•°
 	ChunkGenCallback _callback_func;
 	void* _parent;
 
-	//»ñÈ¡Ö¸¶¨Çø¿éÊÇ·ñ´´½¨
+	//è·å–æŒ‡å®šåŒºå—æ˜¯å¦åˆ›å»º
 	bool _chunk_generated(int chunk_x, int chunk_y) const;
-	//»ñÈ¡Çø¿éÊı¾İ£¨Ìí¼Óµ½»º´æ£©
+	//è·å–åŒºå—æ•°æ®ï¼ˆæ·»åŠ åˆ°ç¼“å­˜ï¼‰
 	Tag* _get_chunk_data(int chunk_x, int chunk_y);
-	//Éú³ÉÇø¿éÊı¾İ
+	//ç”ŸæˆåŒºå—æ•°æ®
 	Tag* _generate_chunk_data(int chunk_x, int chunk_y);
-	//´ÓÎÄ¼şÖĞ¶ÁÈ¡Êı¾İ
+	//ä»æ–‡ä»¶ä¸­è¯»å–æ•°æ®
 	Tag* _load_chunk_from_file(int chunk_x, int chunk_y);
-	//´ÓÎÄ¼şÖĞĞ´ÈëÊı¾İ
+	//ä»æ–‡ä»¶ä¸­å†™å…¥æ•°æ®
 	void _write_chunk_to_file(int chunk_x, int chunk_y, Tag* data);
-	//¼ÓÔØÊı¾İµ½ÄÚ´æÖĞ
+	//åŠ è½½æ•°æ®åˆ°å†…å­˜ä¸­
 	void _add_to_memory(int chunk_x, int chunk_y, Tag* data, bool data_changed = false);
-	//´ÓÄÚ´æÖĞÒÆ³ıÊı¾İ
+	//ä»å†…å­˜ä¸­ç§»é™¤æ•°æ®
 	void _unload_data(int chunk_x, int chunk_y);
 };

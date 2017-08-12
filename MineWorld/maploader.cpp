@@ -1,4 +1,4 @@
-#include "maploader.h"
+ï»¿#include "maploader.h"
 #include <string>
 #include <fstream>
 #include <qpainter.h>
@@ -6,6 +6,7 @@
 #include <qfuture.h>
 #include <QtConcurrent\qtconcurrentmap.h>
 #include "util.h"
+#include <Windows.h>
 using namespace std;
 
 double MapLoader::_animation_duration = 0.3;
@@ -198,7 +199,7 @@ void MapLoader::_load_config()
 	string* str_version = nullptr;
 	tag_version->GetData((void*&)str_version);
 
-	//ÕâÀï¿ÉÒÔ²åÈë´æµµ°æ±¾µÄÉı¼¶´úÂë
+	//è¿™é‡Œå¯ä»¥æ’å…¥å­˜æ¡£ç‰ˆæœ¬çš„å‡çº§ä»£ç 
 
 	debug_delete str_version;
 	debug_delete tag_version;
@@ -267,7 +268,7 @@ bool MapLoader::_is_gen_mask(int cx, int cy)
 
 void MapLoader::_gen_mask(int cx, int cy)
 {
-	//¼ÓÔØÉÏÏÂ×óÓÒµÄÊı¾İ
+	//åŠ è½½ä¸Šä¸‹å·¦å³çš„æ•°æ®
 	int size = (1 << DEFAULT_CHUNK_SIZE) + 2;
 	char** data = nullptr;
 	_cl->GetBlockData((cx << DEFAULT_CHUNK_SIZE) - 1, (cy << DEFAULT_CHUNK_SIZE) - 1, (cx + 1) << DEFAULT_CHUNK_SIZE, (cy + 1) << DEFAULT_CHUNK_SIZE, data);
@@ -279,12 +280,12 @@ void MapLoader::_gen_mask(int cx, int cy)
 			if (data[x][y] & 0x10)
 			{
 				if (x - 1 > 0 && y - 1 > 0)data[x - 1][y - 1]++;
-				if (x - 1 > 0) data[x - 1][y]++;
+				if (x - 1 > 0 && y > 0) data[x - 1][y]++;
 				if (x - 1 > 0 && y + 1 < size - 1)data[x - 1][y + 1]++;
-				if (y - 1 > 0) data[x][y - 1]++;
-				if (y + 1 < size - 1) data[x][y + 1]++;
+				if (x > 0 && x < size - 1 && y - 1 > 0) data[x][y - 1]++;
+				if (x > 0 && x < size - 1 && y + 1 < size - 1) data[x][y + 1]++;
 				if (x + 1 < size - 1 && y - 1 > 0)data[x + 1][y - 1]++;
-				if (x + 1 < size - 1) data[x + 1][y]++;
+				if (x + 1 < size - 1 && y > 0 && y < size - 1) data[x + 1][y]++;
 				if (x + 1 < size - 1 && y + 1 < size - 1)data[x + 1][y + 1]++;
 			}
 		}
@@ -305,12 +306,15 @@ void MapLoader::_gen_mask(int cx, int cy)
 	debug_delete[] data;
 }
 
-void MapLoader::_load_map(char **& data)
+void MapLoader::_load_map(char **& data, QPointF& pt)
 {
-	QPointF pf1(_location), pf2((_location.x() + _width) / _block_size, (_location.y() + _height) / _block_size);
-	QPoint p1((int)floor(pf1.x()), (int)floor(pf1.y())), p2((int)ceil(pf2.x()), (int)ceil(pf2.y()));
+	QPointF pf1(pt), pf2(pt.x() + _width / _block_size, pt.y() + _height / _block_size);
+	QPoint p1((int)floor(pf1.x()), (int)floor(pf1.y())), p2((int)floor(pf2.x()), (int)floor(pf2.y()));
 	auto c1 = _cl->GetChunkPos(p1.x(), p1.y());
 	auto c2 = _cl->GetChunkPos(p2.x(), p2.y());
+	char buf[140];
+	sprintf_s(buf, "load block (%d,%d) to (%d,%d) / origin:(%f,%f) to (%f,%f)\r\n", p1.x(), p1.y(), p2.x(), p2.y(), pf1.x(), pf1.y(), pf2.x(), pf2.y());
+	OutputDebugStringA(buf);
 	for (int x = c1.first; x <= c2.first; x++)
 	{
 		for (int y = c1.second; y <= c2.second; y++)
@@ -322,10 +326,10 @@ void MapLoader::_load_map(char **& data)
 	_cl->GetBlockData(p1.x(), p1.y(), p2.x(), p2.y(), data);
 }
 
-QPoint MapLoader::_translate_pos(QPointF block)
+QPoint MapLoader::_translate_pos(QPointF& block, QPointF& left_top)
 {
-	double x = (block.x() - _location.x())*_block_size;
-	double y = (block.y() - _location.y())*_block_size;
+	double x = (block.x() - left_top.x())*_block_size;
+	double y = (block.y() - left_top.y())*_block_size;
 	return QPoint((int)x, (int)y);
 }
 
@@ -338,6 +342,10 @@ MapLoader::MapLoader()
 	_mine_icon = debug_new QImage(":/MineWorld/icon.png");
 	_width = 0;
 	_height = 0;
+	_cache_map = nullptr;
+	_cache_location = _location;
+	_cache_width = 0;
+	_cache_height = 0;
 	_load_config();
 }
 
@@ -354,6 +362,8 @@ MapLoader::~MapLoader()
 		debug_delete[] _thumbnail_cache;
 	}
 	_thumbnail_cache = nullptr;
+	if (_cache_map) debug_delete _cache_map;
+	_cache_map = nullptr;
 }
 
 void MapLoader::renderMap(QPainter& p, QWidget* form)
@@ -373,34 +383,179 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			_thumbnail_cache[(unsigned char)i1->code] = debug_new QImage(*i2);
 	}
 
-	//merging map
-
-	int x1 = floor(_location.x());
-	int x2 = ceil((_location.x() + _width) / _block_size);
-	int y1 = floor(_location.y());
-	int y2 = ceil((_location.y() + _height) / _block_size);
-	int dx = x2 - x1;
-	int dy = y2 - y1;
+	//è¿™é‡Œæ”¹æˆå…ˆåœ¨cache_imageç»˜å›¾ï¼Œå†å¤åˆ¶åˆ°çª—ä½“
 	char** data = nullptr;
-	_load_map(data);
-
-	for (int x = 0; x <= dx; x++)
+#pragma region cache resize
+	if (_cache_width != _width || _cache_height != _height)
 	{
-		for (int y = 0; y <= dy; y++)
+		int x1 = floor(_cache_location.x());
+		int x2 = floor(_cache_location.x() + _width / _block_size);
+		int y1 = floor(_cache_location.y());
+		int y2 = floor(_cache_location.y() + _height / _block_size);
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+		_load_map(data, _cache_location);
+		if (_cache_map)
 		{
-			QImage* img = _thumbnail_cache[(data[x][y] & 0x7f)];
-			if (!img)
+			QImage* temp = debug_new QImage(_width, _height, QImage::Format::Format_ARGB32);
+			QPainter* temp2 = debug_new QPainter(temp);
+			int w = min(_width, _cache_width), h = min(_height, _cache_height);
+			temp2->drawImage(QRect(0, 0, w, h), *_cache_map, QRect(0, 0, w, h));
+			//part redraw
+			if (_width > _cache_width || _height > _cache_height)
 			{
-				int test = 0;
-			}
-			QPoint pos = _translate_pos(QPointF(x, y));
-			p.drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
-		}
-	}
-	for (int i = 0; i <= dx; i++)
-		debug_delete[] data[i];
-	debug_delete[] data;
+				//uses _cache_location.x() and y() instead of x1, y1
+				int xc = floor(_cache_location.x() + _cache_width / _block_size);
+				int yc = floor(_cache_location.y() + _cache_height / _block_size);
 
+				for (int x = xc; x <= x2; x++)
+				{
+					for (int y = y1; y <= y2; y++)
+					{
+						QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
+						QPoint pos = _translate_pos(QPointF(x, y), _cache_location);
+						temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+					}
+				}
+				for (int x = x1; x < xc; x++)
+				{
+					for (int y = yc; y <= y2; y++)
+					{
+						QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
+						QPoint pos = _translate_pos(QPointF(x, y), _cache_location);
+						temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+					}
+				}
+			}
+			_cache_width = _width;
+			_cache_height = _height;
+			debug_delete temp2;
+			debug_delete _cache_map;
+			_cache_map = temp;
+		}
+		else
+		{
+			_cache_map = debug_new QImage(_width, _height, QImage::Format::Format_ARGB32);
+			QPainter* temp = debug_new QPainter(_cache_map);
+			_cache_width = _width;
+			_cache_height = _height;
+			_cache_location = _location;
+			//full redraw
+			for (int x = 0; x <= dx; x++)
+			{
+				for (int y = 0; y <= dy; y++)
+				{
+					QImage* img = _thumbnail_cache[(data[x][y] & 0x7f)];
+					QPoint pos = _translate_pos(QPointF(x, y), _cache_location);
+					temp->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+				}
+			}
+			debug_delete temp;
+		}
+		for (int i = 0; i <= dx; i++)
+			debug_delete[] data[i];
+		debug_delete[] data;
+		data = nullptr;
+	}
+#pragma endregion
+
+#pragma region cache translate
+	if (_location != _cache_location)
+	{
+		int x1 = floor(_location.x());
+		int x2 = floor(_location.x() + _width / _block_size);
+		int y1 = floor(_location.y());
+		int y2 = floor(_location.y() + _height / _block_size);
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+		_load_map(data, _location);
+		QRect src, dst;
+		if (_location.x() >= _cache_location.x())
+		{
+			int dx = (int)((_location.x() - _cache_location.x()) * _block_size);
+			src.setX(dx);
+			src.setWidth(_width - dx);
+			dst.setX(0);
+			dst.setWidth(_width - dx);
+		}
+		else
+		{
+			int dx = (int)((_cache_location.x() - _location.x()) * _block_size);
+			src.setX(0);
+			src.setWidth(_width - dx);
+			dst.setX(dx);
+			dst.setWidth(_width - dx);
+		}
+		if (_location.y() >= _cache_location.y())
+		{
+			int dy = (int)((_location.y() - _cache_location.y())*_block_size);
+			src.setY(dy);
+			src.setHeight(_height - dy);
+			dst.setY(0);
+			dst.setHeight(_height - dy);
+		}
+		else
+		{
+			int dy = (int)((_cache_location.y() - _location.y())*_block_size);
+			src.setY(0);
+			src.setHeight(_height - dy);
+			dst.setY(dy);
+			dst.setHeight(_height - dy);
+		}
+
+		QImage* temp = debug_new QImage(_width, _height, QImage::Format::Format_ARGB32);
+		QPainter* temp2 = debug_new QPainter(temp);
+		temp2->drawImage(dst, *_cache_map, src);
+
+		int xc1 = floor(_location.x() + dst.x() / _block_size);
+		int xc2 = floor(_location.x() + (dst.x() + dst.width()) / _block_size);
+		int yc1 = floor(_location.y() + dst.y() / _block_size);
+		int yc2 = floor(_location.y() + (dst.y() + dst.height()) / _block_size);
+
+		for (int x = x1; x <= x2; x++)
+		{
+			for (int y = y1; y <= yc1; y++)
+			{
+				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
+				QPoint pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+			}
+			for (int y = yc2; y <= y2; y++)
+			{
+				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
+				QPoint pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+			}
+		}
+
+		for (int y = yc1 + 1; y < y2; y++)
+		{
+			for (int x = x1; x <= xc1; x++)
+			{
+				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
+				QPoint pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+			}
+			for (int x = xc2; x <= x2; x++)
+			{
+				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
+				QPoint pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+			}
+		}
+
+		_cache_location = _location;
+		debug_delete temp2;
+		debug_delete _cache_map;
+		_cache_map = temp;
+		for (int i = 0; i <= dx; i++)
+			debug_delete[] data[i];
+		debug_delete[] data;
+		data = nullptr;
+	}
+#pragma endregion
+	//merging map
+	p.drawImage(QRect(0, 0, _width, _height), *_cache_map);
 }
 
 void MapLoader::renderAnimation(QPainter& p, QWidget* form)
@@ -409,8 +564,43 @@ void MapLoader::renderAnimation(QPainter& p, QWidget* form)
 	auto i2 = _affect_block.begin();
 	auto i3 = _type.begin();
 	int size = (int)_block_size;
-	
-	//todo: using form->update() to render animation
+
+	double curtime = fGetCurrentTimestamp();
+
+	while (i2 != _affect_block.end())
+	{
+		//timed out, remove
+		if (*i1 + _animation_duration >= curtime)
+		{
+			_start_time.erase(i1);
+			_affect_block.erase(i2);
+			_type.erase(i3);
+			i1 = _start_time.begin();
+			i2 = _affect_block.begin();
+			i3 = _type.begin();
+		}
+
+		QPoint pos = _translate_pos(QPointF(*i2), _location);
+		double stat = (curtime - *i1) / _animation_duration;
+		if (stat < 0.0) stat = 0.0;
+		else if (stat > 1.0) stat = 1.0;
+		if (pos.x() < _width || pos.y() < _height)
+		{
+			switch (*i3)
+			{
+			case animationType::Click:
+
+			case animationType::Enter:
+			case animationType::Leave:
+			default:
+				//type error
+				throw 1; //throw a int exception
+				break;
+			}
+		}
+
+		i1++, i2++, i3++;
+	}
 }
 
 void MapLoader::enterBlock(QPoint block)

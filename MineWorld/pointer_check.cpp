@@ -1,4 +1,4 @@
-#include <cstdlib>
+ï»¿#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #ifdef _WIN32
@@ -7,8 +7,8 @@
 #include "pointer_check.h"
 using namespace std;
 typedef char* pointer;
-pointer head_pointer = nullptr; //×îºóÒ»¸öÉêÇëÄÚ´æ¿Õ¼äµÄµØÖ·
-uint64_t allocated_block = 0; //ÒÑ¾­ÉêÇëµÄÄÚ´æµÄÊıÁ¿
+pointer head_pointer = nullptr; //æœ€åä¸€ä¸ªç”³è¯·å†…å­˜ç©ºé—´çš„åœ°å€
+uint64_t allocated_block = 0; //å·²ç»ç”³è¯·çš„å†…å­˜çš„æ•°é‡
 //#define POINTER_CHECK_OUTPUT_DETAILED_INFO
 
 /*
@@ -105,24 +105,27 @@ uint64_t allocated_block = 0; //ÒÑ¾­ÉêÇëµÄÄÚ´æµÄÊıÁ¿
 * if head_pointer will be deleted, then we will set it to the next pointer.
 */
 
-#ifdef _DEBUG
+#ifdef new
 #undef new
+#endif
+#ifdef delete
 #undef delete
+#endif
 
 void* operator new(size_t size, const char* file, const int line)
 {
 	size_t total_size = size + sizeof(pointer) * 3 + sizeof(int) + sizeof(size_t);
-	pointer memory = (pointer)malloc(total_size); //ÓÃcÓïÑÔµÄ·½Ê½ÉêÇëÄÚ´æ
+	pointer memory = (pointer)malloc(total_size); //ç”¨cè¯­è¨€çš„æ–¹å¼ç”³è¯·å†…å­˜
 
-	pointer* prev_pointer = (pointer*)memory; //Ö¸ÏòÁ´±íµÄÉÏÒ»¸öÔªËØµÄµØÖ·
-	pointer* next_pointer = (pointer*)(memory + sizeof(pointer)); //Ö¸ÏòÁ´±íµÄÏÂÒ»¸öÔªËØµÄµØÖ·
-	char** call_stack_file = (char**)(memory + sizeof(pointer) * 2); //µ÷ÓÃnewÔËËã·ûËùÔÚµÄÔ´ÎÄ¼ş
-	int* call_stack_line = (int*)(memory + sizeof(pointer) * 3); //µ÷ÓÃnewº¯ÊıËùÔÚÔ´ÎÄ¼şµÄĞĞÊı
-	size_t* size_in_use = (size_t*)(memory + sizeof(pointer) * 3 + sizeof(int)); //Òª·ÖÅäµÄÄÚ´æ¿Ø¼şµÄ´óĞ¡
+	pointer* prev_pointer = (pointer*)memory; //æŒ‡å‘é“¾è¡¨çš„ä¸Šä¸€ä¸ªå…ƒç´ çš„åœ°å€
+	pointer* next_pointer = (pointer*)(memory + sizeof(pointer)); //æŒ‡å‘é“¾è¡¨çš„ä¸‹ä¸€ä¸ªå…ƒç´ çš„åœ°å€
+	char** call_stack_file = (char**)(memory + sizeof(pointer) * 2); //è°ƒç”¨newè¿ç®—ç¬¦æ‰€åœ¨çš„æºæ–‡ä»¶
+	int* call_stack_line = (int*)(memory + sizeof(pointer) * 3); //è°ƒç”¨newå‡½æ•°æ‰€åœ¨æºæ–‡ä»¶çš„è¡Œæ•°
+	size_t* size_in_use = (size_t*)(memory + sizeof(pointer) * 3 + sizeof(int)); //è¦åˆ†é…çš„å†…å­˜æ§ä»¶çš„å¤§å°
 
-	pointer base_pointer = (pointer)(memory + sizeof(pointer) * 3 + sizeof(int) + sizeof(size_t)); //·µ»Ø¸øÓÃ»§Ê¹ÓÃµÄÄÚ´æµØÖ·
+	pointer base_pointer = (pointer)(memory + sizeof(pointer) * 3 + sizeof(int) + sizeof(size_t)); //è¿”å›ç»™ç”¨æˆ·ä½¿ç”¨çš„å†…å­˜åœ°å€
 
-	//³õÊ¼»¯Ö¸ÕëµÄÇ°ÖÃÊıÖµ
+	//åˆå§‹åŒ–æŒ‡é’ˆçš„å‰ç½®æ•°å€¼
 	if (file != nullptr)
 	{
 		int file_length = strlen(file) + 1;
@@ -137,7 +140,7 @@ void* operator new(size_t size, const char* file, const int line)
 	*call_stack_line = line;
 	*size_in_use = size;
 
-	//Ìí¼Óµ½ÄÚ´æÉêÇëµÄÁ´±íÖĞ
+	//æ·»åŠ åˆ°å†…å­˜ç”³è¯·çš„é“¾è¡¨ä¸­
 	*prev_pointer = nullptr;
 	*next_pointer = head_pointer;
 
@@ -240,8 +243,6 @@ void operator delete[](void * ptr, const char * file, const int line)
 	operator delete[](ptr);
 }
 
-#endif
-
 void cout_leak_memory()
 {
 	if (allocated_block)
@@ -255,9 +256,9 @@ void cout_leak_memory()
 			pointer* next_pointer = (pointer*)(current_pointer + sizeof(pointer));
 			char** call_stack_file = (char**)(current_pointer + sizeof(pointer) * 2);
 			int* call_stack_line = (int*)(current_pointer + sizeof(pointer) * 3);
-			size_t* size_in_use = (size_t*)(current_pointer + sizeof(pointer) * 3 + 4);
+			size_t* size_in_use = (size_t*)(current_pointer + sizeof(pointer) * 3 + sizeof(int));
 
-			pointer base_pointer = (pointer)(current_pointer + sizeof(pointer) * 3 + 8);
+			pointer base_pointer = (pointer)(current_pointer + sizeof(pointer) * 3 + sizeof(int) + sizeof(size_t));
 
 
 			cout << (*call_stack_file) << "  Line:" << (*call_stack_line) << "  0x" << (void*)base_pointer << " (" << (*size_in_use) << " Bytes)" << endl;
@@ -276,10 +277,7 @@ allocated_pointer_collection get_leak_memory()
 {
 	pointer _head_pointer = head_pointer;
 	size_t _allocated_block = allocated_block;
-#pragma warning(push)
-#pragma warning(disable: 4244)
 	allocated_pointer_collection ret = allocated_pointer_collection(_allocated_block);
-#pragma warning(pop)
 	pointer current_pointer = _head_pointer;
 	int count = 0;
 	while (current_pointer)

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <QtWidgets/QMainWindow>
 #include "ui_mineworld.h"
@@ -17,36 +17,36 @@ private:
 	Ui::MineWorldClass ui;
 	char _status;
 	QTimer* _timer;
-	//±³¾°¶¯»­: ½¥±ä²âÊÔ
-	//Ä¿±ê»Ò¶È
+	//èƒŒæ™¯åŠ¨ç”»: æ¸å˜æµ‹è¯•
+	//ç›®æ ‡ç°åº¦
 	unsigned char _to_gray;
-	//Ô­Ê¼»Ò¶È
+	//åŸå§‹ç°åº¦
 	unsigned char _from_gray;
-	//ÏÂÒ»´Î¸üĞÂÊ±¼ä
+	//ä¸‹ä¸€æ¬¡æ›´æ–°æ—¶é—´
 	double _next_update;
 
-	//±³¾°¶¯»­: Í¼Æ¬Ğı×ª+Ëæ»ú²âÊÔ
+	//èƒŒæ™¯åŠ¨ç”»: å›¾ç‰‡æ—‹è½¬+éšæœºæµ‹è¯•
 	QImage* _ico;
-	//ÊıÁ¿
+	//æ•°é‡
 	static int _ani_particle_count;
-	//¿ªÊ¼Ê±¼ä
+	//å¼€å§‹æ—¶é—´
 	double* _ani_start_time;
-	//³ÖĞøÊ±¼ä
+	//æŒç»­æ—¶é—´
 	static int _ani_duration;
-	//Î»ÖÃ
+	//ä½ç½®
 	QPoint* _ani_from_pos;
 	QPoint* _ani_to_pos;
 	QSize* _ani_size;
-	//Ğı×ª½ÇËÙ¶È(¡ã/s)
+	//æ—‹è½¬è§’é€Ÿåº¦(Â°/s)
 	double* _ani_omega;
-	//²»Í¸Ã÷¶È
+	//ä¸é€æ˜åº¦
 	double* _ani_opacity;
-	//´´½¨Êı¾İ
+	//åˆ›å»ºæ•°æ®
 	void _init_ani_data();
 	void _dispose_ani_data();
-	//»æÖÆ
+	//ç»˜åˆ¶
 	void _update_particle(QPainter& p);
-	//ÖØĞÂÉú³É
+	//é‡æ–°ç”Ÿæˆ
 	void _refresh_particle(int index);
 
 	//UI
@@ -55,21 +55,26 @@ private:
 	QClickableLabel* _start_game;
 	QClickableLabel* _exit;
 
-	//µØÍ¼¼ÓÔØ
+	//åœ°å›¾åŠ è½½
 	MapLoader* _loader;
+
+	//é¼ æ ‡äº‹ä»¶çš„ç›¸å…³å‚æ•° (åƒç´ åæ ‡+æ˜¯å¦å•å‡»)
+	QPointF _mouse_down_pos;
+	QPoint _mouse_last_pos;
+	bool _is_mouse_down;
 protected:
-	//´°Ìå»æÖÆ
+	//çª—ä½“ç»˜åˆ¶
 	void paintEvent(QPaintEvent* event);
-	//´óĞ¡µ÷Õû
+	//å¤§å°è°ƒæ•´
 	void resizeEvent(QResizeEvent* event);
-	//Êó±êÊÂ¼ş
-	void mousePressEvent(QMouseEvent* event); //µ¥»÷
-	void mouseReleaseEvent(QMouseEvent* event); //ÊÍ·Å
-	void mouseMoveEvent(QMouseEvent* event); //ÒÆ¶¯
-	void wheelEvent(QWheelEvent* event); //»¬ÂÖ
+	//é¼ æ ‡äº‹ä»¶
+	void mousePressEvent(QMouseEvent* event); //å•å‡»
+	void mouseReleaseEvent(QMouseEvent* event); //é‡Šæ”¾
+	void mouseMoveEvent(QMouseEvent* event); //ç§»åŠ¨
+	void wheelEvent(QWheelEvent* event); //æ»‘è½®
 
 private slots:
-	//¶¨Ê±Æ÷»Øµ÷º¯Êı
+	//å®šæ—¶å™¨å›è°ƒå‡½æ•°
 	void _background_color_change();
 	void _on_exit_clicked();
 	void _on_start_game_clicked();

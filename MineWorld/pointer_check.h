@@ -1,6 +1,6 @@
-// 
-// ±¾Í·ÎÄ¼ş½öÓÃÓÚ¼ì²â´úÂëÊÇ·ñ´æÔÚÄÚ´æĞ¹Â¶µÄÒş»¼
-// Èç¹ûÒÑ¾­²»ĞèÒª¼ì²â£¬ÇëÎñ±Ø½« .h ÒÔ¼° .cpp ÎÄ¼şÒÆ³öÏîÄ¿£¬»òÔò½«Éú³É²Ù×÷´Ó Debug ¸Ä³É Release £¬·ñÔò»áÓ°Ïìµ½newÒÔ¼°deleteÔ­±¾µÄ½á¹¹ÒÔ¼°ĞÔÄÜ
+ï»¿// 
+// æœ¬å¤´æ–‡ä»¶ä»…ç”¨äºæ£€æµ‹ä»£ç æ˜¯å¦å­˜åœ¨å†…å­˜æ³„éœ²çš„éšæ‚£
+// å¦‚æœå·²ç»ä¸éœ€è¦æ£€æµ‹ï¼Œè¯·åŠ¡å¿…å°† .h ä»¥åŠ .cpp æ–‡ä»¶ç§»å‡ºé¡¹ç›®ï¼Œæˆ–åˆ™å°†ç”Ÿæˆæ“ä½œä» Debug æ”¹æˆ Release ï¼Œå¦åˆ™ä¼šå½±å“åˆ°newä»¥åŠdeleteåŸæœ¬çš„ç»“æ„ä»¥åŠæ€§èƒ½
 // 
 // Author & Copyright: Zhou Xuebin
 // Software Engineering Class 6, South China University of Technology
@@ -18,8 +18,7 @@ struct allocated_pointer
 	void* pointer;
 };
 typedef std::vector<allocated_pointer> allocated_pointer_collection;
-
-#ifdef _DEBUG
+extern uint64_t allocated_block;
 //overrides global operators
 
 void* operator new(size_t size, const char* file, const int line);
@@ -47,10 +46,5 @@ void operator delete[](void* ptr, const char* file, const int line);
 #endif //delete
 
 #endif //ESCAPE_OPERATOR_HOOK
-
-#else //_DEBUG
-#define debug_new new
-#define debug_delete delete
-#endif //_DEBUG
 void cout_leak_memory();
 allocated_pointer_collection get_leak_memory();

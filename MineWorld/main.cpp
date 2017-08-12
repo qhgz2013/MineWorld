@@ -1,9 +1,8 @@
-#include "mineworld.h"
+﻿#include "mineworld.h"
 #include <QtWidgets/QApplication>
 #include "pointer_check.h"
 #include <string>
-#include "chunkloader.h"
-#include <QtConcurrent\qtconcurrentmap.h>
+#include <Windows.h>
 using namespace std;
 
 int __main(int argc, char* argv[])
@@ -17,8 +16,13 @@ int main(int argc, char *argv[])
 {
 	srand(time(nullptr));
 
+	uint64_t before_pointer = allocated_block;
 	int result = __main(argc, argv);
-	auto ptr_result = get_leak_memory();
+	uint64_t after_pointer = allocated_block;
+	if (after_pointer > before_pointer)
+	{
+		return 1; //memory leak
+	}
 
 	return result;
 }

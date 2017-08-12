@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "pointer_check.h"
 // convert T to byte array:
 // return a char array (size is equal to sizeof(T))
@@ -31,7 +31,7 @@ T ConvertFromByteArray(const char* _data)
 	return temp_union.data;
 }
 
-// »ñÈ¡´Ó1970.1.1µ½ÏÖÔÚ¾­¹ıµÄÃëÊı (¾«¶È: 100ns)
+// è·å–ä»1970.1.1åˆ°ç°åœ¨ç»è¿‡çš„ç§’æ•° (ç²¾åº¦: 100ns)
 double fGetCurrentTimestamp();
-// »ñÈ¡´Ó1970.1.1µ½ÏÖÔÚ¾­¹ıµÄÃ¿100nsµÄÊıÁ¿ (¾«¶È: 100ns)
+// è·å–ä»1970.1.1åˆ°ç°åœ¨ç»è¿‡çš„æ¯100nsçš„æ•°é‡ (ç²¾åº¦: 100ns)
 uint64_t GetCurrentTimestamp();

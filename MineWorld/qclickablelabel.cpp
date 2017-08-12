@@ -1,4 +1,4 @@
-#include "qclickablelabel.h"
+﻿#include "qclickablelabel.h"
 #include <QMouseEvent>
 #include <qpainter.h>
 #include "util.h"
@@ -89,7 +89,7 @@ void QClickableLabel::paintEvent(QPaintEvent * event)
 		to_color = fore;
 	}
 
-	//���Ա任
+	//线性变换
 	double stat = (curtime - (_entered ? _enter_time : _leave_time)) / _color_change_duration;
 	if (stat > 1.0) stat = 1.0;
 	else if (stat < 0.0)stat = 0.0;

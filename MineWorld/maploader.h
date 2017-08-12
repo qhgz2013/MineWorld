@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "chunkloader.h"
 #include <qpoint.h>
 #include <io.h>
@@ -6,23 +6,23 @@
 #include <qwidget.h>
 #include <qobject.h>
 #include <list>
-//×÷Îª½çÃæäÖÈ¾µÄÖĞ¼äÀà
+//ä½œä¸ºç•Œé¢æ¸²æŸ“çš„ä¸­é—´ç±»
 class MapLoader : public QObject
 {
 	Q_OBJECT
 private:
 	struct structA { MapLoader* sender; char code; };
-	//Çø¿é¼ÓÔØ
+	//åŒºå—åŠ è½½
 	ChunkLoader* _cl;
-	//µØÀ×µÄÍ¼Æ¬ ¿ÉÌæ»»
+	//åœ°é›·çš„å›¾ç‰‡ å¯æ›¿æ¢
 	QImage* _mine_icon;
-	//µ±Ç°×ø±ê
+	//å½“å‰åæ ‡
 	QPointF _location;
 
-	//·½¿éµÄ´óĞ¡£¨ÏñËØ)
+	//æ–¹å—çš„å¤§å°ï¼ˆåƒç´ )
 	double _block_size;
-	//ÆÁÄ»´óĞ¡
-	double _width, _height;
+	//å±å¹•å¤§å°
+	int _width, _height;
 
 	QImage** _thumbnail_cache;
 	static QImage _render_thumbnail(structA code);
@@ -32,15 +32,15 @@ private:
 	void _load_config();
 	void _save_config();
 
-	//¸ù¾İÀ×µÄÎ»ÖÃÉú³ÉÊı¾İ
+	//æ ¹æ®é›·çš„ä½ç½®ç”Ÿæˆæ•°æ®
 	bool _is_gen_mask(int cx, int cy);
 	void _gen_mask(int cx, int cy);
-	//¼ÓÔØµ±Ç°µÄ·½¿éÊı¾İ
-	void _load_map(char**& data);
-	//×ª»»ÎªÆÁÄ»×ø±ê
-	QPoint _translate_pos(QPointF block);
+	//åŠ è½½å½“å‰çš„æ–¹å—æ•°æ®
+	void _load_map(char**& data, QPointF& pt);
+	//è½¬æ¢ä¸ºå±å¹•åæ ‡
+	QPoint _translate_pos(QPointF& block, QPointF& left_top);
 
-	//¶¯»­Ë³Ğò
+	//åŠ¨ç”»é¡ºåº
 	static double _animation_duration;
 	std::list<double> _start_time;
 	std::list<QPoint> _affect_block;
@@ -49,6 +49,10 @@ private:
 		Enter, Leave, Click
 	};
 	std::list<animationType> _type;
+
+	QPointF _cache_location;
+	int _cache_width, _cache_height;
+	QImage* _cache_map;
 public:
 	MapLoader();
 	~MapLoader();
@@ -65,7 +69,7 @@ public:
 	inline QPointF blockAt(QPoint mouse_pos) const { return QPointF(_location.x() + mouse_pos.x() / _block_size, _location.y() + mouse_pos.y() / _block_size); }
 	void renderMap(QPainter& p, QWidget* form);
 	void renderAnimation(QPainter& p, QWidget* form);
-	//¶ÔÓ¦µÄÊÂ¼ş
+	//å¯¹åº”çš„äº‹ä»¶
 
 	void enterBlock(QPoint block);
 	void leaveBlock(QPoint block);

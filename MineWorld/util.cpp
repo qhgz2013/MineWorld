@@ -1,4 +1,4 @@
-#include "util.h"
+﻿#include "util.h"
 #include <Windows.h>
 #include <ctime>
 using namespace std;

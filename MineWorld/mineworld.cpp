@@ -1,4 +1,4 @@
-#include "mineworld.h"
+ï»¿#include "mineworld.h"
 #include <qpainter.h>
 #include <qtimer.h>
 #include <qpropertyanimation.h>
@@ -6,6 +6,7 @@
 #include <math.h>
 #include "util.h"
 #include <qevent.h>
+#include <Windows.h>
 using namespace std;
 
 //static definations
@@ -28,6 +29,7 @@ MineWorld::MineWorld(QWidget *parent)
 	_next_update = fGetCurrentTimestamp() + 5;
 	_ico = new QImage(":/MineWorld/icon.png");
 	_loader = new MapLoader();
+	_is_mouse_down = false;
 
 	_init_ani_data();
 
@@ -246,8 +248,8 @@ void MineWorld::paintEvent(QPaintEvent * event)
 	}
 	else if (_status == 3)
 	{
-		//È«ÆÁÖØ»æº¯Êý
-		if (event->rect().width() == width() && event->rect().height() == height())
+		//å…¨å±é‡ç»˜å‡½æ•°
+		//if (event->rect().width() == width() && event->rect().height() == height())
 			_loader->renderMap(p, this);
 	}
 }
@@ -265,17 +267,31 @@ void MineWorld::resizeEvent(QResizeEvent * event)
 
 void MineWorld::mousePressEvent(QMouseEvent * event)
 {
+	if (event->button() & Qt::MouseButton::LeftButton)
+	{
+		_is_mouse_down = true;
+		_mouse_down_pos = event->pos();
+		_mouse_last_pos = event->pos();
+	}
 }
 
 void MineWorld::mouseReleaseEvent(QMouseEvent * event)
 {
+	if (event->button() & Qt::MouseButton::RightButton)
+	{
+		_is_mouse_down = false;
+		_mouse_last_pos = event->pos();
+	}
 }
 
 void MineWorld::mouseMoveEvent(QMouseEvent * event)
 {
-	QPointF pos = _loader->blockAt(event->pos());
-	QPoint ipos = QPoint(floor(pos.x()), floor(pos.y()));
-
+	if (_is_mouse_down && _status == 3)
+	{
+		_loader->setDeltaLocation(QPointF(_mouse_last_pos - event->pos()) / _loader->blockSize());
+		update();
+	}
+	_mouse_last_pos = event->pos();
 }
 
 void MineWorld::wheelEvent(QWheelEvent * event)
@@ -300,7 +316,7 @@ void MineWorld::_on_start_game_clicked()
 
 void MineWorld::_background_color_change()
 {
-	//´¥·¢paint event
+	//è§¦å‘paint event
 	if (_status >= 0 && _status < 3)
 		update();
 }

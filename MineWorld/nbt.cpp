@@ -1,4 +1,4 @@
-#include "nbt.h"
+﻿#include "nbt.h"
 #include "util.h"
 
 void Tag::_write_header(std::ostream & s) const

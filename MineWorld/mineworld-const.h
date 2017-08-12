@@ -1,29 +1,29 @@
-#pragma once
+ï»¿#pragma once
 // MineWorld Generator Constants
 
 
 
 //save data
 
-//±£´æÊı¾İµÄ×ÓÎÄ¼ş¼Ğ
+//ä¿å­˜æ•°æ®çš„å­æ–‡ä»¶å¤¹
 extern const char* DEFAULT_SAVEDATA_PATH;
-//±£´æµÄÎÄ¼şÃû
+//ä¿å­˜çš„æ–‡ä»¶å
 extern const char* DEFAULT_SAVEDATA_FMT;
-//±£´æµÄÉèÖÃÎÄ¼şÃû
+//ä¿å­˜çš„è®¾ç½®æ–‡ä»¶å
 extern const char* DEFAULT_SAVEDATA_SETTING_FMT;
 
 
 //chunk cache
 
-//Ã¿¸öÇø¿éËù±£´æµÄ·½¿éÊı (2^n)
+//æ¯ä¸ªåŒºå—æ‰€ä¿å­˜çš„æ–¹å—æ•° (2^n)
 extern const int   DEFAULT_CHUNK_SIZE;
-//Ä¬ÈÏ×î´ó»º´æÇø¿éÊı
+//é»˜è®¤æœ€å¤§ç¼“å­˜åŒºå—æ•°
 extern const int   DEFAULT_MAX_CHUNK_CACHE;
 
 
 //world generation
 
-//Ä¬ÈÏÉú³ÉÀ×µÄ¸ÅÂÊ
+//é»˜è®¤ç”Ÿæˆé›·çš„æ¦‚ç‡
 extern const int   DEFAULT_GEN_MINE_POSSIBILITY;
 
 

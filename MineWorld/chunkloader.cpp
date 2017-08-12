@@ -1,4 +1,4 @@
-#include "chunkloader.h"
+ï»¿#include "chunkloader.h"
 #include <cstdio>
 #include <io.h>
 #include <direct.h>
@@ -140,7 +140,7 @@ void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
 			char* raw_data = nullptr;
 			tag_data->GetData((void*&)raw_data);
 
-			//¸ÃÇø¿éµÄ×ø±êÊı¾İ
+			//è¯¥åŒºå—çš„åæ ‡æ•°æ®
 			int bx_min_from_cx = x * chunk_size;
 			int by_min_from_cy = y * chunk_size;
 			int bx_max_from_cx = (x + 1)*chunk_size - 1;
@@ -151,7 +151,7 @@ void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
 			int by_min = by_min_from_cy > by1 ? by_min_from_cy : by1;
 			int by_max = by_max_from_cy < by2 ? by_max_from_cy : by2;
 
-			//¸´ÖÆÊı¾İ
+			//å¤åˆ¶æ•°æ®
 			for (int t = bx_min; t <= bx_max; t++)
 			{
 				memcpy_s(
@@ -187,9 +187,10 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 		{
 			TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(x, y);
 			if (!tag_data) return;
-			char* raw_data = debug_new char[chunk_size*chunk_size];
+			char* raw_data = nullptr;
+			tag_data->GetData((void*&)raw_data);
 
-			//¸ÃÇø¿éµÄ×ø±êÊı¾İ
+			//è¯¥åŒºå—çš„åæ ‡æ•°æ®
 			int bx_min_from_cx = x * chunk_size;
 			int by_min_from_cy = y * chunk_size;
 			int bx_max_from_cx = (x + 1)*chunk_size - 1;
@@ -200,7 +201,7 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 			int by_min = by_min_from_cy > by1 ? by_min_from_cy : by1;
 			int by_max = by_max_from_cy < by2 ? by_max_from_cy : by2;
 
-			//¸´ÖÆÊı¾İ
+			//å¤åˆ¶æ•°æ®
 			for (int t = bx_min; t <= bx_max; t++)
 			{
 				memcpy_s(
@@ -301,7 +302,7 @@ Tag * ChunkLoader::_load_chunk_from_file(int chunk_x, int chunk_y)
 	string* str_version = nullptr;
 	tag_version->GetData((void*&)str_version);
 
-	//ÕâÀï¿ÉÒÔ²åÈë´æµµ°æ±¾µÄÉı¼¶´úÂë
+	//è¿™é‡Œå¯ä»¥æ’å…¥å­˜æ¡£ç‰ˆæœ¬çš„å‡çº§ä»£ç 
 
 	debug_delete str_version;
 	debug_delete tag_version;
