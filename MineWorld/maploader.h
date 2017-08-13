@@ -16,6 +16,7 @@ private:
 	ChunkLoader* _cl;
 	//地雷的图片 可替换
 	QImage* _mine_icon;
+	QImage* _flag_icon;
 	//当前坐标
 	QPointF _location;
 
@@ -39,20 +40,21 @@ private:
 	void _load_map(char**& data, QPointF& pt);
 	//转换为屏幕坐标
 	QPoint _translate_pos(QPointF& block, QPointF& left_top);
-
+	void _get_nearby_block(QPoint& block, QPoint nearby[]);
 	//动画顺序
 	static double _animation_duration;
-	std::list<double> _start_time;
-	std::list<QPoint> _affect_block;
-	enum class animationType
-	{
-		Enter, Leave, Click
-	};
-	std::list<animationType> _type;
+	//std::list<double> _start_time;
+	//std::list<QPoint> _affect_block;
+	//enum class animationType
+	//{
+	//	Enter, Leave, Click
+	//};
+	//std::list<animationType> _type;
 
 	QPointF _cache_location;
 	int _cache_width, _cache_height;
 	QImage* _cache_map;
+	void _draw_block(QPoint block, char data, QPainter& p);
 public:
 	MapLoader();
 	~MapLoader();
@@ -74,5 +76,5 @@ public:
 	void enterBlock(QPoint block);
 	void leaveBlock(QPoint block);
 	void clickBlock(QPoint block);
-
+	void rightClickBlock(QPoint block);
 };

@@ -267,26 +267,43 @@ void MineWorld::resizeEvent(QResizeEvent * event)
 
 void MineWorld::mousePressEvent(QMouseEvent * event)
 {
-	if (event->button() & Qt::MouseButton::LeftButton)
-	{
+	//if (event->button() & Qt::MouseButton::LeftButton)
+	//{
 		_is_mouse_down = true;
 		_mouse_down_pos = event->pos();
 		_mouse_last_pos = event->pos();
-	}
+	//}
 }
 
 void MineWorld::mouseReleaseEvent(QMouseEvent * event)
 {
-	if (event->button() & Qt::MouseButton::RightButton)
+	_is_mouse_down = false;
+	if (_status == 3 && _mouse_down_pos == event->pos() && _mouse_last_pos == event->pos())
 	{
-		_is_mouse_down = false;
-		_mouse_last_pos = event->pos();
+		QPointF fblock = _loader->blockAt(event->pos());
+		char buf[100];
+		sprintf_s(buf, "mouse at (%d,%d) block: (%f,%f)\r\n", event->pos().x(), event->pos().y(), fblock.x(), fblock.y());
+		OutputDebugStringA(buf);
+
+		QPoint block(floor(fblock.x()), floor(fblock.y()));
+		if (event->button() & Qt::MouseButton::LeftButton)
+		{
+			//初末位置相同且没有发生移动，判定为一次点击
+			_loader->clickBlock(block);
+		}
+		else if (event->button() & Qt::MouseButton::RightButton)
+		{
+			//初末位置相同且没有发生移动，判定为一次点击
+			_loader->rightClickBlock(block);
+		}
+		update();
 	}
+	_mouse_last_pos = event->pos();
 }
 
 void MineWorld::mouseMoveEvent(QMouseEvent * event)
 {
-	if (_is_mouse_down && _status == 3)
+	if (_is_mouse_down && _status == 3 && _mouse_last_pos != event->pos())
 	{
 		_loader->setDeltaLocation(QPointF(_mouse_last_pos - event->pos()) / _loader->blockSize());
 		update();

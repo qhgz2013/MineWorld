@@ -213,6 +213,19 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 			}
 
 			tag_data->SetData((const void*&)raw_data, chunk_size * chunk_size);
+			//modify flag
+			auto i1 = _loaded_data.begin();
+			auto i2 = _last_access.begin();
+			auto i3 = _data_changed.begin();
+			for (; i1 != _loaded_data.end(); i1++, i2++, i3++)
+			{
+				if (*i1 == tag_data)
+				{
+					*i2 = time(nullptr);
+					*i3 = true;
+				}
+			}
+
 			debug_delete[] raw_data;
 		}
 	}
@@ -390,7 +403,7 @@ void ChunkLoader::_unload_data(int chunk_x, int chunk_y)
 	{
 		_write_chunk_to_file(i1->first, i1->second, *i2);
 	}
-
+	debug_delete *i2;
 	_loaded_pos.erase(i1);
 	_loaded_data.erase(i2);
 	_last_access.erase(i3);
