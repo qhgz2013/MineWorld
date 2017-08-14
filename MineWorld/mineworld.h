@@ -62,6 +62,7 @@ private:
 	QPointF _mouse_down_pos;
 	QPoint _mouse_last_pos;
 	bool _is_mouse_down;
+	double _mouse_down_time;
 protected:
 	//窗体绘制
 	void paintEvent(QPaintEvent* event);

@@ -34,16 +34,26 @@ protected:
 	void _write_header(std::ostream& s) const;
 
 public:
+	//从数据流中读入Tag
 	static Tag* ReadTagFromStream(std::istream& s);
+	//写入到数据流中
 	static void WriteTagFromStream(std::ostream& s, const Tag& tag);
+	//复制一个新的Tag
 	static Tag* CopyTag(const Tag* tag);
 	virtual ~Tag() {}
+	//获取Tag的名称
 	std::string GetName() const { return _name; }
+	//设置Tag的名称
 	void SetName(std::string& name) { _name = name; }
+	//获取Tag类型
 	TagType GetType() const { return _tagType; }
 
+	//获取Tag中的数据（复制到data中，data会自动创建）
 	virtual void GetData(void*& data) const = 0;
+	//设置Tag中的数据（从data中复制数据到Tag里，data删除后不影响Tag中的数据）
 	virtual void SetData(const void*& data) = 0;
+	//直接获取Tag中的数据（不经过复制，用于提升性能，可以直接影响到Tag中的数据）
+	void* GetDataRef() const { return _data; }
 };
 
 class TagInt : public Tag

@@ -33,8 +33,7 @@ void ChunkLoader::GetChunkData(int cx, int cy, char**& data)
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(cx, cy);
 	if (!tag_data) return;
-	char* raw_data = nullptr;
-	tag_data->GetData((void*&)raw_data);
+	char* raw_data = (char*)tag_data->GetDataRef();
 
 	data = debug_new char*[size];
 	for (int i = 0; i < size; i++)
@@ -42,7 +41,6 @@ void ChunkLoader::GetChunkData(int cx, int cy, char**& data)
 		data[i] = debug_new char[size];
 		memcpy_s(data[i], size, raw_data + i * size, size);
 	}
-	debug_delete[] raw_data;
 }
 
 char ChunkLoader::GetBlockData(int bx, int by)
@@ -52,28 +50,21 @@ char ChunkLoader::GetBlockData(int bx, int by)
 	auto chunk_pos = GetChunkPos(bx, by);
 	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(chunk_pos.first, chunk_pos.second);
 	if (!tag_data) return '\0';
-	char* raw_data = nullptr;
-	tag_data->GetData((void*&)raw_data);
-
-	char ret = raw_data[size * (bx - chunk_pos.first * size) + (by - chunk_pos.second * size)];
-	debug_delete[] raw_data;
-
-	return ret;
+	char* raw_data = (char*)tag_data->GetDataRef();
+	return raw_data[size * (bx - chunk_pos.first * size) + (by - chunk_pos.second * size)];
 }
 
 void ChunkLoader::SetChunkData(int cx, int cy, const char**& data)
 {
 	//storage sequence: 0,0 1,0 2,0 ... n,0 1,0 1,1 ...
 	int size = 1 << DEFAULT_CHUNK_SIZE;
-	char* raw_data = debug_new char[size * size];
+	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(cx, cy);
+	if (!tag_data) return; //could not find tag, returned (this condition should be false commonly)
+	char* raw_data = (char*)tag_data->GetDataRef();
 	for (int i = 0; i < size; i++)
 	{
 		memcpy_s(raw_data + i * size, size, data[i], size);
 	}
-	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(cx, cy);
-	if (!tag_data) return; //could not find tag, returned (this condition should be false commonly)
-
-	tag_data->SetData((const void*&)raw_data, size * size);
 	//modify flag
 	auto i1 = _loaded_data.begin();
 	auto i2 = _last_access.begin();
@@ -86,20 +77,17 @@ void ChunkLoader::SetChunkData(int cx, int cy, const char**& data)
 			*i3 = true;
 		}
 	}
-	debug_delete[] raw_data;
 }
 
 void ChunkLoader::SetBlockData(int bx, int by, char data)
 {
 	int size = 1 << DEFAULT_CHUNK_SIZE;
-	char* raw_data = nullptr;
 	auto chunk_pos = GetChunkPos(bx, by);
 	TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(chunk_pos.first, chunk_pos.second);
 	if (!tag_data) return; //could not find tag, returned (this condition should be false commonly)
 
-	tag_data->GetData((void*&)raw_data);
+	char* raw_data = (char*)tag_data->GetDataRef();
 	raw_data[size * (bx - chunk_pos.first * size) + (by - chunk_pos.second * size)] = data;
-	tag_data->SetData((const void*&)raw_data, size * size);
 	//modify flag
 	auto i1 = _loaded_data.begin();
 	auto i2 = _last_access.begin();
@@ -112,7 +100,6 @@ void ChunkLoader::SetBlockData(int bx, int by, char data)
 			*i3 = true;
 		}
 	}
-	debug_delete[] raw_data;
 }
 
 void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
@@ -137,8 +124,7 @@ void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
 		{
 			TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(x, y);
 			if (!tag_data) return;
-			char* raw_data = nullptr;
-			tag_data->GetData((void*&)raw_data);
+			char* raw_data = (char*)tag_data->GetDataRef();
 
 			//该区块的坐标数据
 			int bx_min_from_cx = x * chunk_size;
@@ -161,8 +147,6 @@ void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
 					by_max - by_min + 1
 				);
 			}
-
-			debug_delete[] raw_data;
 		}
 	}
 }
@@ -187,8 +171,7 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 		{
 			TagByteArray* tag_data = (TagByteArray*)_get_chunk_data(x, y);
 			if (!tag_data) return;
-			char* raw_data = nullptr;
-			tag_data->GetData((void*&)raw_data);
+			char* raw_data = (char*)tag_data->GetDataRef();
 
 			//该区块的坐标数据
 			int bx_min_from_cx = x * chunk_size;
@@ -212,7 +195,6 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 				);
 			}
 
-			tag_data->SetData((const void*&)raw_data, chunk_size * chunk_size);
 			//modify flag
 			auto i1 = _loaded_data.begin();
 			auto i2 = _last_access.begin();
@@ -225,8 +207,6 @@ void ChunkLoader::SetBlockData(int bx1, int by1, int bx2, int by2, const char **
 					*i3 = true;
 				}
 			}
-
-			debug_delete[] raw_data;
 		}
 	}
 }

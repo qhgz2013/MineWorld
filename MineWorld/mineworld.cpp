@@ -250,7 +250,7 @@ void MineWorld::paintEvent(QPaintEvent * event)
 	{
 		//全屏重绘函数
 		//if (event->rect().width() == width() && event->rect().height() == height())
-			_loader->renderMap(p, this);
+		_loader->renderMap(p, this);
 	}
 }
 
@@ -267,18 +267,18 @@ void MineWorld::resizeEvent(QResizeEvent * event)
 
 void MineWorld::mousePressEvent(QMouseEvent * event)
 {
-	//if (event->button() & Qt::MouseButton::LeftButton)
-	//{
-		_is_mouse_down = true;
-		_mouse_down_pos = event->pos();
-		_mouse_last_pos = event->pos();
-	//}
+	_is_mouse_down = true;
+	_mouse_down_pos = event->pos();
+	_mouse_last_pos = event->pos();
+	_mouse_down_time = fGetCurrentTimestamp();
 }
 
 void MineWorld::mouseReleaseEvent(QMouseEvent * event)
 {
 	_is_mouse_down = false;
-	if (_status == 3 && _mouse_down_pos == event->pos() && _mouse_last_pos == event->pos())
+	double mouse_up_time = fGetCurrentTimestamp();
+	//0.1s内无视鼠标移动事件，直接判定为点击
+	if (_status == 3 && ((_mouse_down_pos == event->pos() && _mouse_last_pos == event->pos()) || mouse_up_time - _mouse_down_time <= 0.1))
 	{
 		QPointF fblock = _loader->blockAt(event->pos());
 		char buf[100];
@@ -303,12 +303,18 @@ void MineWorld::mouseReleaseEvent(QMouseEvent * event)
 
 void MineWorld::mouseMoveEvent(QMouseEvent * event)
 {
-	if (_is_mouse_down && _status == 3 && _mouse_last_pos != event->pos())
+	double cur_time = fGetCurrentTimestamp();
+
+	if ((cur_time - _mouse_down_time > 0.1) || abs(event->pos().x() - _mouse_last_pos.x()) + abs(event->pos().y() - _mouse_last_pos.y()) > 1)
 	{
-		_loader->setDeltaLocation(QPointF(_mouse_last_pos - event->pos()) / _loader->blockSize());
-		update();
+		if (_is_mouse_down && _status == 3 && _mouse_last_pos != event->pos())
+		{
+			_loader->setDeltaLocation(QPointF(_mouse_last_pos - event->pos()) / _loader->blockSize());
+			update();
+		}
+
+		_mouse_last_pos = event->pos();
 	}
-	_mouse_last_pos = event->pos();
 }
 
 void MineWorld::wheelEvent(QWheelEvent * event)
