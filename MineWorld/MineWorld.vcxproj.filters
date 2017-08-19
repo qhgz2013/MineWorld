@@ -1,19 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
-      <Extensions>qrc;*</Extensions>
-      <ParseFiles>false</ParseFiles>
-    </Filter>
-    <Filter Include="Form Files">
-      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
-      <Extensions>ui</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
       <Extensions>qrc;*</Extensions>
@@ -43,6 +30,13 @@
     <Filter Include="gui">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Game Control">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="zlib-1.2.11-x86-prebuild">
+      <UniqueIdentifier>{3e7be102-844c-4787-af2b-b3e5423c096c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -78,7 +72,7 @@
       <Filter>gui</Filter>
     </ClCompile>
     <ClCompile Include="maploader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Game Control</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_mineworld.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -107,7 +101,7 @@
       <Filter>gui</Filter>
     </CustomBuild>
     <CustomBuild Include="maploader.h">
-      <Filter>Source Files</Filter>
+      <Filter>Game Control</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -129,5 +123,21 @@
     <ClInclude Include="mineworld-const.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="zlib-1.2.11\zconf.h">
+      <Filter>zlib-1.2.11-x86-prebuild</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib-1.2.11\zlib.h">
+      <Filter>zlib-1.2.11-x86-prebuild</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="zlib-1.2.11\zlib.lib">
+      <Filter>zlib-1.2.11-x86-prebuild</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="zlib-1.2.11\zlib.dll">
+      <Filter>zlib-1.2.11-x86-prebuild</Filter>
+    </None>
   </ItemGroup>
 </Project>

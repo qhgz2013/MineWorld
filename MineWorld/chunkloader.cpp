@@ -5,6 +5,10 @@
 #include <fstream>
 #include <cmath>
 #include "pointer_check.h"
+//zlib compress mode
+#include <sstream>
+#include "zlib-1.2.11\zlib.h"
+#pragma comment(lib, "zlib.lib")
 
 using namespace std;
 const int IO_MODE_EXIST = 0;
@@ -287,7 +291,41 @@ Tag * ChunkLoader::_load_chunk_from_file(int chunk_x, int chunk_y)
 	if (access(filename, IO_MODE_READ) == -1) return nullptr; //file not exist
 
 	ifstream ifs(filename, ios::binary | ios::in);
-	TagList* tag_list = (TagList*)Tag::ReadTagFromStream(ifs);
+	//decompress mode
+	ifs.seekg(0, ios::end);
+	streamoff file_length = ifs.tellg();
+	ifs.seekg(0, ios::beg);
+	auto src_data = debug_new char[file_length];
+	ifs.read(src_data, file_length);
+	ifs.close();
+	uLong dst_length = 0x200000; //2mb
+	int dst_increment = 0x100000; //1mb increment
+	int code;
+	auto dst_data = debug_new char[dst_length];
+	do
+	{
+		code = uncompress((Byte*)dst_data, (uLong*)&dst_length, (Byte*)src_data, file_length);
+		if (code == Z_BUF_ERROR)
+		{
+			debug_delete[] dst_data;
+			dst_length += dst_increment;
+			dst_data = debug_new char[dst_length];
+		}
+		else if (code == Z_DATA_ERROR || code == Z_MEM_ERROR) //out of memory or data invalid
+		{
+			debug_delete[] src_data;
+			debug_delete[] dst_data;
+			return nullptr;
+		}
+	} while (code != Z_OK);
+
+	stringstream ss;
+	ss.write(dst_data, dst_length);
+
+	debug_delete[] src_data;
+	debug_delete[] dst_data;
+
+	TagList* tag_list = (TagList*)Tag::ReadTagFromStream(ss);
 
 	TagString* tag_version = (TagString*)(tag_list->GetData(string("version")));
 	TagByteArray* tag_data = (TagByteArray*)(tag_list->GetData(string("chunkdata")));
@@ -301,7 +339,6 @@ Tag * ChunkLoader::_load_chunk_from_file(int chunk_x, int chunk_y)
 	debug_delete tag_version;
 	debug_delete tag_list;
 
-	ifs.close();
 	return tag_data;
 }
 
@@ -325,14 +362,30 @@ void ChunkLoader::_write_chunk_to_file(int chunk_x, int chunk_y, Tag * data)
 	tag_list->AddData(tag_version);
 	tag_list->AddData(tag_data);
 
+	stringstream ss;
+	Tag::WriteTagFromStream(ss, *tag_list);
+	streamoff src_length = ss.tellp();
+	auto src_data = debug_new char[src_length];
+	ss.read(src_data, src_length);
+
+	auto dst_data = debug_new char[src_length];
+	uLong dst_length = (uLong)src_length;
+
+	int code = compress((Byte*)dst_data, (uLongf*)&dst_length, (Byte*)src_data, src_length);
+	debug_delete[] src_data;
+	if (code != Z_OK)
+	{
+		debug_delete[] dst_data;
+		return;
+	}
 
 	ofstream ofs(filename, ios::binary | ios::out);
-	Tag::WriteTagFromStream(ofs, *tag_list);
+	ofs.write(dst_data, dst_length);
 	ofs.close();
 	debug_delete tag_version;
 	debug_delete str_version;
 	debug_delete tag_list;
-
+	debug_delete[] dst_data;
 }
 
 void ChunkLoader::_add_to_memory(int chunk_x, int chunk_y, Tag * data, bool data_changed)

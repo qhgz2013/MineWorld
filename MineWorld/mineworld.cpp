@@ -86,7 +86,12 @@ MineWorld::~MineWorld()
 	if (_version) delete _version;
 	_version = nullptr;
 
-	if (_loader) delete _loader;
+	if (_loader)
+	{
+		_loader->setWidth(0);
+		_loader->setHeight(0); //restore left-top point
+		delete _loader;
+	}
 	_loader = nullptr;
 }
 

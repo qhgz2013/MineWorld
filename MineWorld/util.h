@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "pointer_check.h"
+// C# like variable defination:
+#define var auto
 // convert T to byte array:
 // return a char array (size is equal to sizeof(T))
 template<typename T>

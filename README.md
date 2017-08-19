@@ -10,7 +10,7 @@ C++实训大作业-无限扫雷
 见 [http://blog.csdn.net/liang19890820/article/details/53931813](http://blog.csdn.net/liang19890820/article/details/53931813)
 
 ## 运行环境
-Windows 7/8/10 64位OS
+Windows 7/8/10 32位OS
 
 ## ROAD MAP
 1. 构建保存文件架构（大概是二进制命名标签吧）

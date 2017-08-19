@@ -10,8 +10,6 @@
 #include <queue>
 using namespace std;
 
-double MapLoader::_animation_duration = 0.3;
-
 QImage MapLoader::_render_thumbnail(structA code)
 {
 	int size = (int)code.sender->_block_size;
@@ -332,11 +330,18 @@ void MapLoader::_load_map(char **& data, QPointF& pt)
 	_cl->GetBlockData(p1.x(), p1.y(), p2.x(), p2.y(), data);
 }
 
-QPoint MapLoader::_translate_pos(QPointF& block, QPointF& left_top)
+QPointF MapLoader::_translate_pos(QPointF& block, QPointF& left_top)
 {
 	double x = (block.x() - left_top.x())*_block_size;
 	double y = (block.y() - left_top.y())*_block_size;
-	return QPoint((int)x, (int)y);
+	return QPointF(x, y);
+}
+
+void MapLoader::_draw_block(QPoint block, char data, QPainter & p)
+{
+	QPointF pos = _translate_pos(QPointF(block), _location);
+	QImage* img = _thumbnail_cache[data & 0x7f];
+	p.drawImage(QRect(floor(pos.x()), floor(pos.y()), _block_size, _block_size), *img);
 }
 
 MapLoader::MapLoader()
@@ -424,8 +429,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 					for (int y = y1; y <= y2; y++)
 					{
 						QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-						QPoint pos = _translate_pos(QPointF(x, y), _cache_location);
-						temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+						QPointF pos = _translate_pos(QPointF(x, y), _cache_location);
+						temp2->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 					}
 				}
 				for (int x = x1; x < xc; x++)
@@ -433,8 +438,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 					for (int y = yc; y <= y2; y++)
 					{
 						QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-						QPoint pos = _translate_pos(QPointF(x, y), _cache_location);
-						temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+						QPointF pos = _translate_pos(QPointF(x, y), _cache_location);
+						temp2->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 					}
 				}
 			}
@@ -464,8 +469,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 				for (int y = y1; y <= y2; y++)
 				{
 					QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-					QPoint pos = _translate_pos(QPointF(x, y), _cache_location);
-					temp->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+					QPointF pos = _translate_pos(QPointF(x, y), _cache_location);
+					temp->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 				}
 			}
 			debug_delete temp;
@@ -490,7 +495,7 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 		QRect src, dst;
 		if (_location.x() >= _cache_location.x())
 		{
-			int dx = (int)((_location.x() - _cache_location.x()) * _block_size);
+			int dx = floor((_location.x() - _cache_location.x()) * _block_size);
 			src.setX(dx);
 			src.setWidth(_width - dx);
 			dst.setX(0);
@@ -498,7 +503,7 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 		}
 		else
 		{
-			int dx = (int)((_cache_location.x() - _location.x()) * _block_size);
+			int dx = floor((_cache_location.x() - _location.x()) * _block_size);
 			src.setX(0);
 			src.setWidth(_width - dx);
 			dst.setX(dx);
@@ -506,7 +511,7 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 		}
 		if (_location.y() >= _cache_location.y())
 		{
-			int dy = (int)((_location.y() - _cache_location.y())*_block_size);
+			int dy = floor((_location.y() - _cache_location.y())*_block_size);
 			src.setY(dy);
 			src.setHeight(_height - dy);
 			dst.setY(0);
@@ -514,7 +519,7 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 		}
 		else
 		{
-			int dy = (int)((_cache_location.y() - _location.y())*_block_size);
+			int dy = floor((_cache_location.y() - _location.y())*_block_size);
 			src.setY(0);
 			src.setHeight(_height - dy);
 			dst.setY(dy);
@@ -535,14 +540,14 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			for (int y = y1; y <= yc1; y++)
 			{
 				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-				QPoint pos = _translate_pos(QPointF(x, y), _location);
-				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+				QPointF pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 			}
 			for (int y = yc2; y <= y2; y++)
 			{
 				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-				QPoint pos = _translate_pos(QPointF(x, y), _location);
-				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+				QPointF pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 			}
 		}
 
@@ -551,14 +556,14 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			for (int x = x1; x <= xc1; x++)
 			{
 				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-				QPoint pos = _translate_pos(QPointF(x, y), _location);
-				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+				QPointF pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 			}
 			for (int x = xc2; x <= x2; x++)
 			{
 				QImage* img = _thumbnail_cache[(data[x - x1][y - y1] & 0x7f)];
-				QPoint pos = _translate_pos(QPointF(x, y), _location);
-				temp2->drawImage(QRect(pos.x(), pos.y(), (int)_block_size, (int)_block_size), *img);
+				QPointF pos = _translate_pos(QPointF(x, y), _location);
+				temp2->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 			}
 		}
 
@@ -576,114 +581,10 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 	p.drawImage(QRect(0, 0, _width, _height), *_cache_map);
 }
 
-void MapLoader::renderAnimation(QPainter& p, QWidget* form)
-{
-	//auto i1 = _start_time.begin();
-	//auto i2 = _affect_block.begin();
-	//auto i3 = _type.begin();
-	//int size = (int)_block_size;
-
-	//double curtime = fGetCurrentTimestamp();
-
-	//while (i2 != _affect_block.end())
-	//{
-	//	//timed out, remove
-	//	if (*i1 + _animation_duration >= curtime)
-	//	{
-	//		_start_time.erase(i1);
-	//		_affect_block.erase(i2);
-	//		_type.erase(i3);
-	//		i1 = _start_time.begin();
-	//		i2 = _affect_block.begin();
-	//		i3 = _type.begin();
-	//	}
-
-	//	QPoint pos = _translate_pos(QPointF(*i2), _location);
-	//	double stat = (curtime - *i1) / _animation_duration;
-	//	if (stat < 0.0) stat = 0.0;
-	//	else if (stat > 1.0) stat = 1.0;
-	//	if (pos.x() < _width || pos.y() < _height)
-	//	{
-	//		switch (*i3)
-	//		{
-	//		case animationType::Click:
-
-	//		case animationType::Enter:
-	//		case animationType::Leave:
-	//		default:
-	//			//type error
-	//			throw 1; //throw a int exception
-	//			break;
-	//		}
-	//	}
-
-	//	i1++, i2++, i3++;
-	//}
-}
-
-void MapLoader::enterBlock(QPoint block)
-{
-	//if (block.x() >= _location.x() + _width / _block_size || block.y() >= _location.y() + _height / _block_size) return;
-	//auto i1 = _start_time.begin();
-	//auto i2 = _affect_block.begin();
-	//auto i3 = _type.begin();
-	//for (; i2 != _affect_block.end(); i1++, i2++, i3++)
-	//{
-	//	if (*i2 == block)
-	//	{
-	//		_start_time.erase(i1);
-	//		_affect_block.erase(i2);
-	//		_type.erase(i3);
-	//	}
-	//}
-	//double curtime = fGetCurrentTimestamp();
-	//_start_time.push_back(curtime);
-	//_affect_block.push_back(block);
-	//_type.push_back(animationType::Enter);
-}
-
-void MapLoader::leaveBlock(QPoint block)
-{
-	//if (block.x() >= _location.x() + _width / _block_size || block.y() >= _location.y() + _height / _block_size) return;
-	//auto i1 = _start_time.begin();
-	//auto i2 = _affect_block.begin();
-	//auto i3 = _type.begin();
-	//for (; i2 != _affect_block.end(); i1++, i2++, i3++)
-	//{
-	//	if (*i2 == block)
-	//	{
-	//		_start_time.erase(i1);
-	//		_affect_block.erase(i2);
-	//		_type.erase(i3);
-	//	}
-	//}
-	//double curtime = fGetCurrentTimestamp();
-	//_start_time.push_back(curtime);
-	//_affect_block.push_back(block);
-	//_type.push_back(animationType::Leave);
-}
-
 void MapLoader::clickBlock(QPoint block)
 {
-	//if (block.x() >= _location.x() + _width / _block_size || block.y() >= _location.y() + _height / _block_size) return;
-	//auto i1 = _start_time.begin();
-	//auto i2 = _affect_block.begin();
-	//auto i3 = _type.begin();
-	//for (; i2 != _affect_block.end(); i1++, i2++, i3++)
-	//{
-	//	if (*i2 == block)
-	//	{
-	//		_start_time.erase(i1);
-	//		_affect_block.erase(i2);
-	//		_type.erase(i3);
-	//	}
-	//}
-	//double curtime = fGetCurrentTimestamp();
-	//_start_time.push_back(curtime);
-	//_affect_block.push_back(block);
-	//_type.push_back(animationType::Click);
-
 	queue<QPoint> bfs_queue;
+	double cur_time = fGetCurrentTimestamp();
 
 	QPainter p(_cache_map);
 	char blockdata = _cl->GetBlockData(block.x(), block.y());
@@ -784,6 +685,8 @@ void MapLoader::_get_nearby_block(QPoint & block, QPoint nearby[])
 
 void MapLoader::rightClickBlock(QPoint block)
 {
+	double cur_time = fGetCurrentTimestamp();
+
 	char blockdata = _cl->GetBlockData(block.x(), block.y());
 	QPainter p(_cache_map);
 	if ((blockdata & 0x60) == 0x60)
@@ -792,7 +695,6 @@ void MapLoader::rightClickBlock(QPoint block)
 		blockdata &= 0x9f;
 		_cl->SetBlockData(block.x(), block.y(), blockdata);
 		_draw_block(block, blockdata, p);
-
 	}
 	else if (blockdata & 0x40)
 	{
@@ -839,11 +741,4 @@ void MapLoader::rightClickBlock(QPoint block)
 		_cl->SetBlockData(block.x(), block.y(), blockdata);
 		_draw_block(block, blockdata, p);
 	}
-}
-
-void MapLoader::_draw_block(QPoint block, char data, QPainter& p)
-{
-	QPoint pos = _translate_pos(QPointF(block), _location);
-	QImage* img = _thumbnail_cache[data & 0x7f];
-	p.drawImage(QRect(pos.x(), pos.y(), _block_size, _block_size), *img);
 }
