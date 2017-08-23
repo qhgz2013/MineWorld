@@ -53,8 +53,14 @@ private:
 	QClickableLabel* _title;
 	QClickableLabel* _version;
 	QClickableLabel* _start_game;
+	QClickableLabel* _new_game;
 	QClickableLabel* _exit;
-
+	QClickableLabel* _game_mode_label;
+	QClickableLabel* _easy;
+	QClickableLabel* _normal;
+	QClickableLabel* _hard;
+	QClickableLabel* _game_mode_back;
+	bool _exist_svd;
 	//地图加载
 	MapLoader* _loader;
 
@@ -79,4 +85,9 @@ private slots:
 	void _background_color_change();
 	void _on_exit_clicked();
 	void _on_start_game_clicked();
+	void _on_new_game_clicked();
+	void _on_easy_clicked();
+	void _on_normal_clicked();
+	void _on_hard_clicked();
+	void _on_game_mode_back_clicked();
 };

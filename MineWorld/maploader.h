@@ -25,6 +25,7 @@ private:
 	double _block_size;
 	//屏幕大小
 	int _width, _height;
+	int _possibility;
 
 	QImage** _thumbnail_cache;
 	static QImage _render_thumbnail(structA code);
@@ -49,7 +50,7 @@ private:
 	QImage* _cache_map;
 	void _draw_block(QPoint block, char data, QPainter& p);
 public:
-	MapLoader();
+	MapLoader(int possibility = GEN_MINE_POSSIBILITY);
 	~MapLoader();
 
 	inline double blockSize() const { return _block_size; }

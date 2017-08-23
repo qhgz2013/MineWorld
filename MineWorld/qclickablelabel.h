@@ -7,7 +7,7 @@ class QClickableLabel : public QLabel
 	Q_OBJECT
 
 public:
-	QClickableLabel(const QString& text = "", QWidget *parent = nullptr);
+	QClickableLabel(const QString& text = "", QWidget *parent = nullptr, bool visible = true);
 	~QClickableLabel();
 	
 	inline QColor hoverColor() const { return _hover_color; }

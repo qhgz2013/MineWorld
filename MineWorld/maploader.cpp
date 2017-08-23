@@ -169,7 +169,7 @@ Tag * MapLoader::_chunk_gen_cb(void* sender, int cx, int cy)
 	for (int i = 0; i < size; i++)
 	{
 		int pos = rand() % 100;
-		if (pos >= DEFAULT_GEN_MINE_POSSIBILITY)
+		if (pos >= GEN_MINE_POSSIBILITY)
 			data[i] = 0x00;
 		else
 			data[i] = 0x10;
@@ -199,7 +199,8 @@ void MapLoader::_load_config()
 	TagString* tag_version = (TagString*)(tag_list->GetData(string("version")));
 	TagDouble* px = (TagDouble*)(tag_list->GetData(string("position-x")));
 	TagDouble* py = (TagDouble*)(tag_list->GetData(string("position-y")));
-	TagInt* block_size = (TagInt*)(tag_list->GetData(string("block-size")));
+	TagDouble* block_size = (TagDouble*)(tag_list->GetData(string("block-size")));
+	TagInt* possibility = (TagInt*)(tag_list->GetData(string("possibility")));
 	string* str_version = nullptr;
 	tag_version->GetData((void*&)str_version);
 
@@ -218,6 +219,12 @@ void MapLoader::_load_config()
 	debug_delete y;
 	debug_delete px;
 	debug_delete py;
+
+	int* poss = nullptr;
+	possibility->GetData((void*&)poss);
+	_possibility = *poss;
+	debug_delete poss;
+	debug_delete possibility;
 
 	double* bs;
 	block_size->GetData((void*&)bs);
@@ -248,16 +255,19 @@ void MapLoader::_save_config()
 	TagDouble* px = debug_new TagDouble(string("position-x"), _location.x());
 	TagDouble* py = debug_new TagDouble(string("position-y"), _location.y());
 	TagDouble* block_size = debug_new TagDouble(string("block-size"), _block_size);
+	TagInt* possibility = debug_new TagInt(string("possibility"), _possibility);
 
 	tag_list->AddData(tag_version);
 	tag_list->AddData(px);
 	tag_list->AddData(py);
 	tag_list->AddData(block_size);
+	tag_list->AddData(possibility);
 
 	debug_delete tag_version;
 	debug_delete px;
 	debug_delete py;
 	debug_delete block_size;
+	debug_delete possibility;
 
 	Tag::WriteTagFromStream(ofs, *tag_list);
 	debug_delete tag_list;
@@ -284,17 +294,42 @@ void MapLoader::_gen_mask(int cx, int cy)
 			if (data[x][y] & 0x10)
 			{
 				if (x - 1 > 0 && y - 1 > 0)data[x - 1][y - 1]++;
-				if (x - 1 > 0 && y > 0) data[x - 1][y]++;
+				if (x - 1 > 0 && y > 0 && y < size - 1) data[x - 1][y]++;
 				if (x - 1 > 0 && y + 1 < size - 1)data[x - 1][y + 1]++;
 				if (x > 0 && x < size - 1 && y - 1 > 0) data[x][y - 1]++;
 				if (x > 0 && x < size - 1 && y + 1 < size - 1) data[x][y + 1]++;
 				if (x + 1 < size - 1 && y - 1 > 0)data[x + 1][y - 1]++;
 				if (x + 1 < size - 1 && y > 0 && y < size - 1) data[x + 1][y]++;
 				if (x + 1 < size - 1 && y + 1 < size - 1)data[x + 1][y + 1]++;
+				if (x > 0 && x < size - 1 && y > 0 && y < size - 1) data[x][y]++; //test only
 			}
 		}
 	}
+	//validating code
+	for (int x = 1; x < size - 1; x++)
+	{
+		for (int y = 1; y < size - 1; y++)
+		{
+			char expected_data = data[x][y] & 0x0f;
+			char actual_data = 0;
+			if (data[x - 1][y - 1] & 0x10) actual_data++;
+			if (data[x - 1][y] & 0x10) actual_data++;
+			if (data[x - 1][y + 1] & 0x10) actual_data++;
+			if (data[x][y - 1] & 0x10) actual_data++;
+			if (data[x][y] & 0x10) actual_data++;
+			if (data[x][y + 1] & 0x10) actual_data++;
+			if (data[x + 1][y - 1] & 0x10) actual_data++;
+			if (data[x + 1][y] & 0x10) actual_data++;
+			if (data[x + 1][y + 1] & 0x10) actual_data++;
 
+			if (actual_data != expected_data)
+			{
+				char buf[256];
+				sprintf_s(buf, "Generator error: validate failed at block (%d,%d)\r\n", x, y);
+				OutputDebugStringA(buf);
+			}
+		}
+	}
 	for (int x = 1; x < size - 1; x++)
 	{
 		for (int y = 1; y < size - 1; y++)
@@ -339,12 +374,12 @@ QPointF MapLoader::_translate_pos(QPointF& block, QPointF& left_top)
 
 void MapLoader::_draw_block(QPoint block, char data, QPainter & p)
 {
-	QPointF pos = _translate_pos(QPointF(block), _location);
+	QPointF pos = _translate_pos(QPointF(block), _cache_location);
 	QImage* img = _thumbnail_cache[data & 0x7f];
 	p.drawImage(QRect(floor(pos.x()), floor(pos.y()), _block_size, _block_size), *img);
 }
 
-MapLoader::MapLoader()
+MapLoader::MapLoader(int possibility)
 {
 	_cl = debug_new ChunkLoader(_chunk_gen_cb, this);
 	_location = QPointF(0, 0);
@@ -358,6 +393,7 @@ MapLoader::MapLoader()
 	_cache_location = _location;
 	_cache_width = 0;
 	_cache_height = 0;
+	_possibility = possibility;
 	_load_config();
 }
 

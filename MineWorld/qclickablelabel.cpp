@@ -4,7 +4,7 @@
 #include "util.h"
 using namespace std;
 
-QClickableLabel::QClickableLabel(const QString& text, QWidget *parent)
+QClickableLabel::QClickableLabel(const QString& text, QWidget *parent, bool visible)
 	: QLabel(parent)
 {
 	setText(text);
@@ -20,6 +20,8 @@ QClickableLabel::QClickableLabel(const QString& text, QWidget *parent)
 	setCursor(Qt::CursorShape::PointingHandCursor);
 
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+	_visible = visible;
+	QLabel::setVisible(_visible);
 }
 
 QClickableLabel::~QClickableLabel()

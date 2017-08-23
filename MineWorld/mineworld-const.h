@@ -24,7 +24,9 @@ extern const int   DEFAULT_MAX_CHUNK_CACHE;
 //world generation
 
 //默认生成雷的概率
-extern const int   DEFAULT_GEN_MINE_POSSIBILITY;
-
+extern const int   DEFAULT_GEN_MINE_POSSIBILITY_HARD;
+extern const int   DEFAULT_GEN_MINE_POSSIBILITY_NORMAL;
+extern const int   DEFAULT_GEN_MINE_POSSIBILITY_EASY;
+extern int         GEN_MINE_POSSIBILITY;
 
 //game rules

@@ -1,7 +1,6 @@
 ﻿#include "mineworld.h"
 #include <qpainter.h>
 #include <qtimer.h>
-#include <qpropertyanimation.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "util.h"
@@ -28,7 +27,6 @@ MineWorld::MineWorld(QWidget *parent)
 
 	_next_update = fGetCurrentTimestamp() + 5;
 	_ico = new QImage(":/MineWorld/icon.png");
-	_loader = new MapLoader();
 	_is_mouse_down = false;
 
 	_init_ani_data();
@@ -39,7 +37,7 @@ MineWorld::MineWorld(QWidget *parent)
 	_title->setObjectName("_title");
 	_title->setCursor(Qt::CursorShape::ArrowCursor);
 	_title->setEnableHoverAnimation(false);
-	_version = new QClickableLabel("Version: v0.01 Pre-Alpha", this);
+	_version = new QClickableLabel("Version: v0.03 Alpha", this);
 	_version->setGeometry(QRect(40, 110, 270, 15));
 	_version->setFont(QFont("SimSun", 9));
 	_version->setObjectName("_version");
@@ -50,42 +48,92 @@ MineWorld::MineWorld(QWidget *parent)
 	_version->setEnableHoverAnimation(false);
 	_version->setHoverColor(QColor(Qt::gray));
 
-	_start_game = new QClickableLabel("Start Game", this);
-	_start_game->setGeometry(QRect(330, 180, 160, 40));
+	_exist_svd = access(DEFAULT_SAVEDATA_PATH, IO_MODE_EXIST) != -1;
+	if (_exist_svd)
+	{
+		_start_game = new QClickableLabel("Start Game", this);
+		_start_game->setGeometry(QRect(330, 180, 160, 40));
+	}
+	else
+	{
+		//save path not exist, no start game shown
+		_start_game = new QClickableLabel("Start Game", this, false);
+		_start_game->setGeometry(QRect(330, 180 - 70, 160, 40));
+	}
 	_start_game->setFont(QFont("Trajan Pro 3", 18));
 	_start_game->setObjectName("_start_game");
 	_start_game->setHoverColor(QColor(255, 165, 0)); //orange
+	_new_game = new QClickableLabel("New Game", this);
+	_new_game->setFont(QFont("Trajan Pro 3", 18));
+	_new_game->setObjectName("_new_game");
+	_new_game->setHoverColor(QColor(255, 165, 0)); //orange
+	_new_game->setGeometry(QRect(330, _start_game->geometry().top() + 70, 160, 40));
 	_exit = new QClickableLabel("Exit", this);
-	_exit->setGeometry(QRect(330, 250, 160, 40));
 	_exit->setFont(QFont("Trajan Pro 3", 18));
 	_exit->setObjectName("_exit");
 	_exit->setHoverColor(QColor(255, 165, 0)); //orange
+	_exit->setGeometry(QRect(330, _new_game->geometry().top() + 70, 160, 40));
+
+	//select game mode
+	_game_mode_label = new QClickableLabel("Select Difficulty", this, false);
+	_game_mode_label->setFont(QFont("Trajan Pro 3", 20));
+	_game_mode_label->setEnableHoverAnimation(false);
+	_game_mode_label->setGeometry(QRect(330, 160, 300, 40));
+	_game_mode_label->setObjectName("_game_mode_label");
+	_game_mode_label->setCursor(QCursor(Qt::CursorShape::ArrowCursor));
+	_easy = new QClickableLabel("Easy", this, false);
+	_easy->setFont(QFont("Trajan Pro 3", 14));
+	_easy->setObjectName("_easy");
+	_easy->setHoverColor(QColor(255, 165, 0));
+	_easy->setGeometry(QRect(330, _game_mode_label->geometry().top() + 60, 150, 30));
+	_normal = new QClickableLabel("Normal", this, false);
+	_normal->setFont(QFont("Trajan Pro 3", 14));
+	_normal->setObjectName("_normal");
+	_normal->setHoverColor(QColor(255, 165, 0));
+	_normal->setGeometry(QRect(330, _easy->geometry().top() + 40, 150, 30));
+	_hard = new QClickableLabel("Hard", this, false);
+	_hard->setFont(QFont("Trajan Pro 3", 14));
+	_hard->setObjectName("_hard");
+	_hard->setHoverColor(QColor(255, 165, 0));
+	_hard->setGeometry(QRect(330, _normal->geometry().top() + 40, 150, 30));
+	_game_mode_back = new QClickableLabel("Back", this, false);
+	_game_mode_back->setFont(QFont("Trajan Pro 3", 18));
+	_game_mode_back->setHoverColor(QColor(255, 165, 0));
+	_game_mode_back->setObjectName("_game_mode_back");
+	_game_mode_back->setGeometry(QRect(330, _hard->geometry().top() + 50, 150, 40));
 
 	connect(_exit, SIGNAL(clicked()), this, SLOT(_on_exit_clicked()));
 	connect(_start_game, SIGNAL(clicked()), this, SLOT(_on_start_game_clicked()));
+	connect(_new_game, SIGNAL(clicked()), this, SLOT(_on_new_game_clicked()));
+	connect(_game_mode_back, SIGNAL(clicked()), this, SLOT(_on_game_mode_back_clicked()));
+	connect(_easy, SIGNAL(clicked()), this, SLOT(_on_easy_clicked()));
+	connect(_normal, SIGNAL(clicked()), this, SLOT(_on_normal_clicked()));
+	connect(_hard, SIGNAL(clicked()), this, SLOT(_on_hard_clicked()));
 
+	_loader = new MapLoader();
 }
 
 MineWorld::~MineWorld()
 {
 	if (_timer && _timer->isActive())
 		_timer->stop();
-	if (_timer) delete _timer;
-	_timer = nullptr;
-	if (_ico) delete _ico;
-	_ico = nullptr;
+
+#define _dispose(x) if (x) delete x; x = nullptr
+	_dispose(_timer);
+	_dispose(_ico);
+	_dispose(_start_game);
+	_dispose(_new_game);
+	_dispose(_exit);
+	_dispose(_title);
+	_dispose(_version);
+	_dispose(_game_mode_label);
+	_dispose(_easy);
+	_dispose(_normal);
+	_dispose(_hard);
+	_dispose(_game_mode_back);
+#undef _dispose
 
 	_dispose_ani_data();
-
-	if (_start_game) delete _start_game;
-	_start_game = nullptr;
-	if (_exit) delete _exit;
-	_exit = nullptr;
-	if (_title) delete _title;
-	_title = nullptr;
-	if (_version) delete _version;
-	_version = nullptr;
-
 	if (_loader)
 	{
 		_loader->setWidth(0);
@@ -184,7 +232,7 @@ void MineWorld::paintEvent(QPaintEvent * event)
 	QPainter p(this);
 	double cur_time = fGetCurrentTimestamp();
 	//main title
-	if (_status == 0)
+	if (_status == 0 || _status == 4)
 	{
 
 		//background
@@ -207,7 +255,7 @@ void MineWorld::paintEvent(QPaintEvent * event)
 		double window_angle = atan((width() - 1)*1.0 / (height() - 1));
 
 		//using _ani_start_time[0]
-		if (_ani_start_time[0] + ani_duration < cur_time)
+		if (_ani_start_time[0] + ani_duration + 0.1 < cur_time)
 		{
 			p.fillRect(rect(), Qt::darkGray);
 			_ani_start_time[0] = cur_time;
@@ -261,10 +309,18 @@ void MineWorld::paintEvent(QPaintEvent * event)
 
 void MineWorld::resizeEvent(QResizeEvent * event)
 {
-	_start_game->setGeometry((width() - _start_game->width()) >> 1, _start_game->geometry().y(), _start_game->width(), _start_game->height());
-	_exit->setGeometry((width() - _exit->width()) >> 1, _exit->geometry().y(), _exit->width(), _exit->height());
-	_version->setGeometry((width() - _version->width()) >> 1, _version->geometry().y(), _version->width(), _version->height());
-	_title->setGeometry((width() - _title->width()) >> 1, _title->geometry().y(), _title->width(), _title->height());
+#define _center(x) x->setGeometry((width() - x->width()) >> 1, x->geometry().y(), x->width(), x->height())
+	_center(_start_game);
+	_center(_new_game);
+	_center(_exit);
+	_center(_version);
+	_center(_title);
+	_center(_game_mode_back);
+	_center(_game_mode_label);
+	_center(_easy);
+	_center(_normal);
+	_center(_hard);
+#undef _center
 
 	if (_loader) _loader->setWidth(width());
 	if (_loader) _loader->setHeight(height());
@@ -293,12 +349,10 @@ void MineWorld::mouseReleaseEvent(QMouseEvent * event)
 		QPoint block(floor(fblock.x()), floor(fblock.y()));
 		if (event->button() & Qt::MouseButton::LeftButton)
 		{
-			//初末位置相同且没有发生移动，判定为一次点击
 			_loader->clickBlock(block);
 		}
 		else if (event->button() & Qt::MouseButton::RightButton)
 		{
-			//初末位置相同且没有发生移动，判定为一次点击
 			_loader->rightClickBlock(block);
 		}
 		update();
@@ -334,6 +388,7 @@ void MineWorld::_on_exit_clicked()
 void MineWorld::_on_start_game_clicked()
 {
 	_start_game->hide();
+	_new_game->hide();
 	_exit->hide();
 	_version->hide();
 	_title->hide();
@@ -342,9 +397,82 @@ void MineWorld::_on_start_game_clicked()
 	_status = 1;
 }
 
+void MineWorld::_on_new_game_clicked()
+{
+	if (access(DEFAULT_SAVEDATA_PATH, IO_MODE_EXIST) != -1)
+	{
+		RecursiveDelete(DEFAULT_SAVEDATA_PATH);
+	}
+
+	_start_game->hide();
+	_new_game->hide();
+	_exit->hide();
+	_game_mode_back->show();
+	_game_mode_label->show();
+	_easy->show();
+	_normal->show();
+	_hard->show();
+	_status = 4;
+}
+
+void MineWorld::_on_easy_clicked()
+{
+	GEN_MINE_POSSIBILITY = DEFAULT_GEN_MINE_POSSIBILITY_EASY;
+	_easy->hide();
+	_normal->hide();
+	_hard->hide();
+	_game_mode_back->hide();
+	_game_mode_label->hide();
+	_version->hide();
+	_title->hide();
+
+	_ani_start_time[0] = fGetCurrentTimestamp();
+	_status = 1;
+}
+void MineWorld::_on_normal_clicked()
+{
+	GEN_MINE_POSSIBILITY = DEFAULT_GEN_MINE_POSSIBILITY_NORMAL;
+	_easy->hide();
+	_normal->hide();
+	_hard->hide();
+	_game_mode_back->hide();
+	_game_mode_label->hide();
+	_version->hide();
+	_title->hide();
+
+	_ani_start_time[0] = fGetCurrentTimestamp();
+	_status = 1;
+}
+void MineWorld::_on_hard_clicked()
+{
+	GEN_MINE_POSSIBILITY = DEFAULT_GEN_MINE_POSSIBILITY_HARD;
+	_easy->hide();
+	_normal->hide();
+	_hard->hide();
+	_game_mode_back->hide();
+	_game_mode_label->hide();
+	_version->hide();
+	_title->hide();
+
+	_ani_start_time[0] = fGetCurrentTimestamp();
+	_status = 1;
+}
+void MineWorld::_on_game_mode_back_clicked()
+{
+	if (_exist_svd) _start_game->show();
+	_new_game->show();
+	_exit->show();
+	_easy->hide();
+	_normal->hide();
+	_hard->hide();
+	_game_mode_back->hide();
+	_game_mode_label->hide();
+	_status = 0;
+}
+
 void MineWorld::_background_color_change()
 {
 	//触发paint event
-	if (_status >= 0 && _status < 3)
+	if (_status >= 0 && _status < 3 || _status == 4)
 		update();
 }

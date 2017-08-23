@@ -37,3 +37,6 @@ T ConvertFromByteArray(const char* _data)
 double fGetCurrentTimestamp();
 // 获取从1970.1.1到现在经过的每100ns的数量 (精度: 100ns)
 uint64_t GetCurrentTimestamp();
+
+//删除文件夹和里面的所有文件
+void RecursiveDelete(const char* path);
