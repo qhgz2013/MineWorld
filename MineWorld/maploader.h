@@ -6,6 +6,7 @@
 #include <qwidget.h>
 #include <qobject.h>
 #include <list>
+#include "util.h"
 //作为界面渲染的中间类
 class MapLoader;
 struct structA { MapLoader* sender; char code; };
@@ -26,10 +27,17 @@ private:
 	//屏幕大小
 	int _width, _height;
 	int _possibility;
-
+	//图形缓存
 	QImage** _thumbnail_cache;
 	static QImage _render_thumbnail(structA code);
+	//统计信息
+	uint64_t _cleared_block;
+	uint64_t _flag_made;
+	uint64_t _unknown_made;
+	uint64_t _mine_clicked;
+	double _time_played;
 
+	double _ctor_time;
 	//functions
 	static Tag* _chunk_gen_cb(void* sender, int cx, int cy);
 	void _load_config();
@@ -63,7 +71,16 @@ public:
 	inline void setLocation(QPointF location) { _location = location; }
 	inline void setDeltaLocation(QPointF delta) { _location += delta; }
 	inline QPointF blockAt(QPoint mouse_pos) const { return QPointF(_location.x() + mouse_pos.x() / _block_size, _location.y() + mouse_pos.y() / _block_size); }
+	inline uint64_t clearedBlock() const { return _cleared_block; }
+	inline uint64_t flagMade() const { return _flag_made; }
+	inline uint64_t unknownMade() const { return _unknown_made; }
+	inline uint64_t mineClicked() const { return _mine_clicked; }
+	inline double timePlayed() const { return _time_played + (fGetCurrentTimestamp() - _ctor_time); }
+	inline void clearStatistics() { _cleared_block = _flag_made = _unknown_made = _mine_clicked = 0; _time_played = 0; }
+	inline int possibility() const { return _possibility; }
+	inline void setPossibility(int possibility) { _possibility = possibility; }
 	void renderMap(QPainter& p, QWidget* form);
+	QImage renderMiniMap(int w, int h);
 
 	//对应的事件
 	void clickBlock(QPoint block);

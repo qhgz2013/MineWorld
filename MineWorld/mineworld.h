@@ -4,6 +4,7 @@
 #include "ui_mineworld.h"
 #include "qclickablelabel.h"
 #include "maploader.h"
+#include "qingamesetting.h"
 
 class MineWorld : public QMainWindow
 {
@@ -63,6 +64,7 @@ private:
 	bool _exist_svd;
 	//地图加载
 	MapLoader* _loader;
+	QInGameSetting* _setting;
 
 	//鼠标事件的相关参数 (像素坐标+是否单击)
 	QPointF _mouse_down_pos;
@@ -79,6 +81,8 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* event); //释放
 	void mouseMoveEvent(QMouseEvent* event); //移动
 	void wheelEvent(QWheelEvent* event); //滑轮
+	//按键
+	void keyPressEvent(QKeyEvent* event);
 
 private slots:
 	//定时器回调函数
@@ -90,4 +94,7 @@ private slots:
 	void _on_normal_clicked();
 	void _on_hard_clicked();
 	void _on_game_mode_back_clicked();
+	void _on_ingame_back_to_screen_clicked();
+	void _on_position_updated(int new_x, int new_y);
+	void _on_ingame_exit_clicked();
 };

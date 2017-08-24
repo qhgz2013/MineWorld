@@ -2,12 +2,10 @@
 #include <string>
 #include <fstream>
 #include <qpainter.h>
-#include <qlist.h>
 #include <qfuture.h>
 #include <QtConcurrent\qtconcurrentmap.h>
-#include "util.h"
 #include <Windows.h>
-#include <queue>
+#include <list>
 using namespace std;
 
 QImage MapLoader::_render_thumbnail(structA code)
@@ -196,44 +194,102 @@ void MapLoader::_load_config()
 	ifstream ifs(filename, ios::binary | ios::in);
 	TagList* tag_list = (TagList*)Tag::ReadTagFromStream(ifs);
 
-	TagString* tag_version = (TagString*)(tag_list->GetData(string("version")));
-	TagDouble* px = (TagDouble*)(tag_list->GetData(string("position-x")));
-	TagDouble* py = (TagDouble*)(tag_list->GetData(string("position-y")));
-	TagDouble* block_size = (TagDouble*)(tag_list->GetData(string("block-size")));
-	TagInt* possibility = (TagInt*)(tag_list->GetData(string("possibility")));
+	Tag* cur_tag = nullptr;
+	TagString* tag_version = nullptr;
+	TagDouble* tag_px = nullptr;
+	TagDouble* tag_py = nullptr;
+	TagDouble* tag_block_size = nullptr;
+	TagInt* tag_possibility = nullptr;
+	TagULong* tag_cleared_block = nullptr;
+	TagULong* tag_flag_made = nullptr;
+	TagULong* tag_unknown_made = nullptr;
+	TagULong* tag_mine_clicked = nullptr;
+	TagDouble* tag_time_played = nullptr;
+#define _chk_tag(x, name, type) cur_tag = (tag_list->GetData(string(name))); if (cur_tag) x = (type*)cur_tag
+	//cur_tag = (tag_list->GetData(string("version")));
+	//if (cur_tag) tag_version = (TagString*)cur_tag;
+	//TagDouble* px = (TagDouble*)(tag_list->GetData(string("position-x")));
+	//TagDouble* py = (TagDouble*)(tag_list->GetData(string("position-y")));
+	//TagDouble* block_size = (TagDouble*)(tag_list->GetData(string("block-size")));
+	//TagInt* possibility = (TagInt*)(tag_list->GetData(string("possibility")));
+	_chk_tag(tag_version, "version", TagString);
+	_chk_tag(tag_px, "position-x", TagDouble);
+	_chk_tag(tag_py, "position-y", TagDouble);
+	_chk_tag(tag_block_size, "block-size", TagDouble);
+	_chk_tag(tag_possibility, "possibility", TagInt);
+	_chk_tag(tag_cleared_block, "cleared-block", TagULong);
+	_chk_tag(tag_flag_made, "flag-made", TagULong);
+	_chk_tag(tag_unknown_made, "unknown-made", TagULong);
+	_chk_tag(tag_mine_clicked, "mine-clicked", TagULong);
+	_chk_tag(tag_time_played, "time-played", TagDouble);
+#undef _chk_tag
+
 	string* str_version = nullptr;
-	tag_version->GetData((void*&)str_version);
+	if (tag_version) tag_version->GetData((void*&)str_version);
 
 	//这里可以插入存档版本的升级代码
 
-	debug_delete str_version;
-	debug_delete tag_version;
+	if (str_version) debug_delete str_version;
+	if (tag_version) debug_delete tag_version;
 
-	double* x;
-	double* y;
-	px->GetData((void*&)x);
-	py->GetData((void*&)y);
+	double* x = nullptr;
+	double* y = nullptr;
+	if (tag_px) tag_px->GetData((void*&)x);
+	if (tag_py) tag_py->GetData((void*&)y);
+	if (!x) x = debug_new double(0);
+	if (!y) y = debug_new double(0);
 	_location = QPointF(*x, *y);
 
 	debug_delete x;
 	debug_delete y;
-	debug_delete px;
-	debug_delete py;
+	if (tag_px) debug_delete tag_px;
+	if (tag_py) debug_delete tag_py;
 
-	int* poss = nullptr;
-	possibility->GetData((void*&)poss);
-	_possibility = *poss;
-	debug_delete poss;
-	debug_delete possibility;
+	int* possibility = nullptr;
+	if (tag_possibility) tag_possibility->GetData((void*&)possibility);
+	if (possibility) _possibility = *possibility;
+	else _possibility = GEN_MINE_POSSIBILITY;
 
-	double* bs;
-	block_size->GetData((void*&)bs);
-	_block_size = *bs;
-	debug_delete bs;
-	debug_delete block_size;
+	if (possibility) debug_delete possibility;
+	if (tag_possibility) debug_delete tag_possibility;
+
+	double* block_size = nullptr;
+	if (tag_block_size) tag_block_size->GetData((void*&)block_size);
+	if (block_size) _block_size = *block_size;
+	if (block_size) debug_delete block_size;
+	if (tag_block_size) debug_delete tag_block_size;
+
+	uint64_t* cleared_block = nullptr;
+	if (tag_cleared_block) tag_cleared_block->GetData((void*&)cleared_block);
+	if (cleared_block) _cleared_block = *cleared_block;
+	if (cleared_block) debug_delete cleared_block;
+	if (tag_cleared_block) debug_delete tag_cleared_block;
+
+	uint64_t* flag_made = nullptr;
+	if (tag_flag_made) tag_flag_made->GetData((void*&)flag_made);
+	if (flag_made) _flag_made = *flag_made;
+	if (flag_made) debug_delete flag_made;
+	if (tag_flag_made) debug_delete tag_flag_made;
+
+	uint64_t* unknown_made = nullptr;
+	if (tag_unknown_made) tag_unknown_made->GetData((void*&)unknown_made);
+	if (unknown_made) _unknown_made = *unknown_made;
+	if (unknown_made) debug_delete unknown_made;
+	if (tag_unknown_made) debug_delete tag_unknown_made;
+
+	uint64_t* mine_clicked = nullptr;
+	if (tag_mine_clicked) tag_mine_clicked->GetData((void*&)mine_clicked);
+	if (mine_clicked) _mine_clicked = *mine_clicked;
+	if (mine_clicked) debug_delete mine_clicked;
+	if (tag_mine_clicked) debug_delete tag_mine_clicked;
+
+	double* time_played = nullptr;
+	if (tag_time_played) tag_time_played->GetData((void*&)time_played);
+	if (time_played) _time_played = *time_played;
+	if (time_played) debug_delete time_played;
+	if (tag_time_played) debug_delete tag_time_played;
 
 	debug_delete tag_list;
-
 	ifs.close();
 }
 
@@ -256,18 +312,33 @@ void MapLoader::_save_config()
 	TagDouble* py = debug_new TagDouble(string("position-y"), _location.y());
 	TagDouble* block_size = debug_new TagDouble(string("block-size"), _block_size);
 	TagInt* possibility = debug_new TagInt(string("possibility"), _possibility);
+	TagULong* cleared_block = debug_new TagULong(string("cleared-block"), _cleared_block);
+	TagULong* flag_made = debug_new TagULong(string("flag-made"), _flag_made);
+	TagULong* unknown_made = debug_new TagULong(string("unknown-made"), _unknown_made);
+	TagULong* mine_clicked = debug_new TagULong(string("mine-clicked"), _mine_clicked);
+	TagDouble* time_played = debug_new TagDouble(string("time-played"), _time_played);
 
 	tag_list->AddData(tag_version);
 	tag_list->AddData(px);
 	tag_list->AddData(py);
 	tag_list->AddData(block_size);
 	tag_list->AddData(possibility);
+	tag_list->AddData(cleared_block);
+	tag_list->AddData(flag_made);
+	tag_list->AddData(unknown_made);
+	tag_list->AddData(mine_clicked);
+	tag_list->AddData(time_played);
 
 	debug_delete tag_version;
 	debug_delete px;
 	debug_delete py;
 	debug_delete block_size;
 	debug_delete possibility;
+	debug_delete cleared_block;
+	debug_delete flag_made;
+	debug_delete unknown_made;
+	debug_delete mine_clicked;
+	debug_delete time_played;
 
 	Tag::WriteTagFromStream(ofs, *tag_list);
 	debug_delete tag_list;
@@ -351,9 +422,9 @@ void MapLoader::_load_map(char **& data, QPointF& pt)
 	QPoint p1((int)floor(pf1.x()), (int)floor(pf1.y())), p2((int)floor(pf2.x()), (int)floor(pf2.y()));
 	auto c1 = _cl->GetChunkPos(p1.x(), p1.y());
 	auto c2 = _cl->GetChunkPos(p2.x(), p2.y());
-	char buf[140];
-	sprintf_s(buf, "load block (%d,%d) to (%d,%d) / origin:(%f,%f) to (%f,%f)\r\n", p1.x(), p1.y(), p2.x(), p2.y(), pf1.x(), pf1.y(), pf2.x(), pf2.y());
-	OutputDebugStringA(buf);
+	//char buf[140];
+	//sprintf_s(buf, "load block (%d,%d) to (%d,%d) / origin:(%f,%f) to (%f,%f)\r\n", p1.x(), p1.y(), p2.x(), p2.y(), pf1.x(), pf1.y(), pf2.x(), pf2.y());
+	//OutputDebugStringA(buf);
 	for (int x = c1.first; x <= c2.first; x++)
 	{
 		for (int y = c1.second; y <= c2.second; y++)
@@ -394,11 +465,18 @@ MapLoader::MapLoader(int possibility)
 	_cache_width = 0;
 	_cache_height = 0;
 	_possibility = possibility;
+	_cleared_block = 0;
+	_flag_made = 0;
+	_unknown_made = 0;
+	_mine_clicked = 0;
+	_time_played = 0;
+	_ctor_time = fGetCurrentTimestamp();
 	_load_config();
 }
 
 MapLoader::~MapLoader()
 {
+	_time_played += fGetCurrentTimestamp() - _ctor_time;
 	_save_config();
 	if (_cl) debug_delete _cl;
 	_cl = nullptr;
@@ -617,9 +695,70 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 	p.drawImage(QRect(0, 0, _width, _height), *_cache_map);
 }
 
+QImage MapLoader::renderMiniMap(int w, int h)
+{
+	QImage img(w, h, QImage::Format::Format_ARGB32);
+	QPainter p(&img);
+
+	const QPen pen_mine(Qt::red);
+	const QPen pen_flag(Qt::green);
+	const QPen pen_unknown(Qt::blue);
+	const QPen pen_unclicked(Qt::black);
+	const QPen pen_rect(Qt::gray);
+	const QPen pen_clicked(Qt::white);
+
+	QPointF offset_f((w - _width / _block_size) / 2, (h - _height / _block_size) / 2);
+	QPointF loc_f = _location - offset_f;
+
+	QRect win_rect(floor(offset_f.x()), floor(offset_f.y()), floor(_width / _block_size) + 1, floor(_height / _block_size) + 1);
+	QPoint loc(floor(loc_f.x()), floor(loc_f.y()));
+
+	char** data = nullptr;
+	_cl->GetBlockData(loc.x(), loc.y(), loc.x() + w - 1, loc.y() + h - 1, data);
+
+	for (int x = 0; x < w; x++)
+	{
+		for (int y = 0; y < h; y++)
+		{
+			char cur_data = data[x][y];
+			if ((cur_data & 0x60) == 0x60)
+				p.setPen(pen_unknown);
+			else if ((cur_data & 0x40))
+				p.setPen(pen_flag);
+			else if ((cur_data & 0x30) == 0x30)
+				p.setPen(pen_mine);
+			else if (cur_data & 0x20)
+				p.setPen(pen_clicked);
+			else
+				p.setPen(pen_unclicked);
+
+			p.drawPoint(x, y);
+		}
+	}
+
+	p.setPen(pen_rect);
+	p.drawRect(win_rect);
+
+	for (int i = 0; i < w; i++)
+		delete data[i];
+	delete data;
+	return img;
+}
+
 void MapLoader::clickBlock(QPoint block)
 {
-	queue<QPoint> bfs_queue;
+	list<QPoint> bfs_queue;
+	list<QPoint> checked_block;
+	//c++11 lambda expr [capture](param){body}
+	auto exist_checked_block = [&](QPoint& x) 
+	{
+		for (auto lambda_iter = checked_block.begin(); lambda_iter != checked_block.end(); lambda_iter++)
+			if (*lambda_iter == x) return true;
+		for (auto lambda_iter = bfs_queue.begin(); lambda_iter != bfs_queue.end(); lambda_iter++)
+			if (*lambda_iter == x) return true;
+		return false; 
+	};
+
 	double cur_time = fGetCurrentTimestamp();
 
 	QPainter p(_cache_map);
@@ -660,7 +799,13 @@ void MapLoader::clickBlock(QPoint block)
 						code[i] = (code[i] & 0x9f) | 0x20;
 						_cl->SetBlockData(nearby[i].x(), nearby[i].y(), code[i]);
 						_draw_block(nearby[i], code[i], p);
-						bfs_queue.push(nearby[i]); //添加到空方块搜索队列
+						bfs_queue.push_back(nearby[i]); //添加到空方块搜索队列
+
+						//stat
+						if ((code[i] & 0x60) == 0x60)
+							_unknown_made--;
+						else if ((code[i] & 0x10))
+							_mine_clicked++;
 					}
 				}
 			}
@@ -672,20 +817,23 @@ void MapLoader::clickBlock(QPoint block)
 		blockdata |= 0x20;
 		_cl->SetBlockData(block.x(), block.y(), blockdata);
 		_draw_block(block, blockdata, p);
+		_mine_clicked++;
 	}
 	else
 	{
 		//当前为一般方块（非雷），被点击
-		//blockdata |= 0x20;
-		//_cl->SetBlockData(block.x(), block.y(), blockdata);
-		bfs_queue.push(block);
+		bfs_queue.push_back(block);
 	}
 
 	//bfs empty block search
 	while (bfs_queue.size())
 	{
 		QPoint pos = bfs_queue.front();
-		bfs_queue.pop();
+		bfs_queue.pop_front();
+
+		//char buf[50];
+		//sprintf_s(buf, "bfs(%d,%d)\r\n", pos.x(), pos.y());
+		//OutputDebugStringA(buf);
 
 		char data = _cl->GetBlockData(pos.x(), pos.y());
 		if (!(data & 0x1f))
@@ -697,13 +845,18 @@ void MapLoader::clickBlock(QPoint block)
 			{
 				char nearby_data = _cl->GetBlockData(nearby[i].x(), nearby[i].y());
 				if (!(nearby_data & 0x20)) //继续添加未点击的方块进搜索队列
-					bfs_queue.push(nearby[i]);
+					if (!exist_checked_block(nearby[i]))
+					{
+						checked_block.push_back(pos);
+						bfs_queue.push_back(nearby[i]);
+					}
 			}
 		}
 
 		data |= 0x20;
 		_cl->SetBlockData(pos.x(), pos.y(), data);
 		_draw_block(pos, data, p);
+		_cleared_block++;
 	}
 }
 
@@ -731,13 +884,16 @@ void MapLoader::rightClickBlock(QPoint block)
 		blockdata &= 0x9f;
 		_cl->SetBlockData(block.x(), block.y(), blockdata);
 		_draw_block(block, blockdata, p);
+		_unknown_made--;
 	}
 	else if (blockdata & 0x40)
 	{
-		//被标记为旗
+		//被标记为旗时，再次右键标记为？
 		blockdata = (blockdata & 0x9f) | 0x60;
 		_cl->SetBlockData(block.x(), block.y(), blockdata);
 		_draw_block(block, blockdata, p);
+		_flag_made--;
+		_unknown_made++;
 	}
 	else if (blockdata & 0x20)
 	{
@@ -766,6 +922,9 @@ void MapLoader::rightClickBlock(QPoint block)
 					code[i] = (code[i] & 0x9f) | 0x40;
 					_cl->SetBlockData(nearby[i].x(), nearby[i].y(), code[i]);
 					_draw_block(nearby[i], code[i], p);
+					if ((code[i] & 0x60) == 0x60)
+						_unknown_made--;
+					_flag_made++;
 				}
 			}
 		}
@@ -776,5 +935,6 @@ void MapLoader::rightClickBlock(QPoint block)
 		blockdata |= 0x40;
 		_cl->SetBlockData(block.x(), block.y(), blockdata);
 		_draw_block(block, blockdata, p);
+		_flag_made++;
 	}
 }

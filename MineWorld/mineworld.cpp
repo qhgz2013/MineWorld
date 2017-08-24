@@ -37,7 +37,7 @@ MineWorld::MineWorld(QWidget *parent)
 	_title->setObjectName("_title");
 	_title->setCursor(Qt::CursorShape::ArrowCursor);
 	_title->setEnableHoverAnimation(false);
-	_version = new QClickableLabel("Version: v0.03 Alpha", this);
+	_version = new QClickableLabel("Version: v1.00", this);
 	_version->setGeometry(QRect(40, 110, 270, 15));
 	_version->setFont(QFont("SimSun", 9));
 	_version->setObjectName("_version");
@@ -111,6 +111,11 @@ MineWorld::MineWorld(QWidget *parent)
 	connect(_hard, SIGNAL(clicked()), this, SLOT(_on_hard_clicked()));
 
 	_loader = new MapLoader();
+	_setting = new QInGameSetting(this, _loader);
+
+	connect(_setting, SIGNAL(backToScreenClicked()), this, SLOT(_on_ingame_back_to_screen_clicked()));
+	connect(_setting, SIGNAL(exitClicked()), this, SLOT(_on_ingame_exit_clicked()));
+	connect(_setting, SIGNAL(positionUpdated(int, int)), this, SLOT(_on_position_updated(int, int)));
 }
 
 MineWorld::~MineWorld()
@@ -131,6 +136,7 @@ MineWorld::~MineWorld()
 	_dispose(_normal);
 	_dispose(_hard);
 	_dispose(_game_mode_back);
+	_dispose(_setting);
 #undef _dispose
 
 	_dispose_ani_data();
@@ -324,6 +330,7 @@ void MineWorld::resizeEvent(QResizeEvent * event)
 
 	if (_loader) _loader->setWidth(width());
 	if (_loader) _loader->setHeight(height());
+	if (_setting) _setting->setGeometry(rect());
 }
 
 void MineWorld::mousePressEvent(QMouseEvent * event)
@@ -339,12 +346,12 @@ void MineWorld::mouseReleaseEvent(QMouseEvent * event)
 	_is_mouse_down = false;
 	double mouse_up_time = fGetCurrentTimestamp();
 	//0.1s内无视鼠标移动事件，直接判定为点击
-	if (_status == 3 && ((_mouse_down_pos == event->pos() && _mouse_last_pos == event->pos()) || mouse_up_time - _mouse_down_time <= 0.1))
+	if (_status == 3 && !_setting->isVisible() && ((_mouse_down_pos == event->pos() && _mouse_last_pos == event->pos()) || mouse_up_time - _mouse_down_time <= 0.1))
 	{
 		QPointF fblock = _loader->blockAt(event->pos());
-		char buf[100];
-		sprintf_s(buf, "mouse at (%d,%d) block: (%f,%f)\r\n", event->pos().x(), event->pos().y(), fblock.x(), fblock.y());
-		OutputDebugStringA(buf);
+		//char buf[100];
+		//sprintf_s(buf, "mouse at (%d,%d) block: (%f,%f)\r\n", event->pos().x(), event->pos().y(), fblock.x(), fblock.y());
+		//OutputDebugStringA(buf);
 
 		QPoint block(floor(fblock.x()), floor(fblock.y()));
 		if (event->button() & Qt::MouseButton::LeftButton)
@@ -364,7 +371,7 @@ void MineWorld::mouseMoveEvent(QMouseEvent * event)
 {
 	double cur_time = fGetCurrentTimestamp();
 
-	if ((cur_time - _mouse_down_time > 0.1) || abs(event->pos().x() - _mouse_last_pos.x()) + abs(event->pos().y() - _mouse_last_pos.y()) > 1)
+	if (!_setting->isVisible() && ((cur_time - _mouse_down_time > 0.1) || abs(event->pos().x() - _mouse_last_pos.x()) + abs(event->pos().y() - _mouse_last_pos.y()) > 1))
 	{
 		if (_is_mouse_down && _status == 3 && _mouse_last_pos != event->pos())
 		{
@@ -379,6 +386,17 @@ void MineWorld::mouseMoveEvent(QMouseEvent * event)
 void MineWorld::wheelEvent(QWheelEvent * event)
 {
 }
+
+void MineWorld::keyPressEvent(QKeyEvent * event)
+{
+	if (_status == 3 && event->key() == Qt::Key_Escape)
+	{
+		_setting->toggleVisible();
+	}
+	else
+		QWidget::keyPressEvent(event);
+}
+
 
 void MineWorld::_on_exit_clicked()
 {
@@ -399,10 +417,6 @@ void MineWorld::_on_start_game_clicked()
 
 void MineWorld::_on_new_game_clicked()
 {
-	if (access(DEFAULT_SAVEDATA_PATH, IO_MODE_EXIST) != -1)
-	{
-		RecursiveDelete(DEFAULT_SAVEDATA_PATH);
-	}
 
 	_start_game->hide();
 	_new_game->hide();
@@ -412,12 +426,26 @@ void MineWorld::_on_new_game_clicked()
 	_easy->show();
 	_normal->show();
 	_hard->show();
+	_loader->clearStatistics();
 	_status = 4;
 }
 
 void MineWorld::_on_easy_clicked()
 {
+	delete _setting;
+	delete _loader;
+	if (access(DEFAULT_SAVEDATA_PATH, IO_MODE_EXIST) != -1)
+	{
+		RecursiveDelete(DEFAULT_SAVEDATA_PATH);
+	}
+	_loader = new MapLoader();
+	_setting = new QInGameSetting(this, _loader);
+	_setting->setGeometry(rect());
+	connect(_setting, SIGNAL(backToScreenClicked()), this, SLOT(_on_ingame_back_to_screen_clicked()));
+	connect(_setting, SIGNAL(exitClicked()), this, SLOT(_on_ingame_exit_clicked()));
+	connect(_setting, SIGNAL(positionUpdated(int, int)), this, SLOT(_on_position_updated(int, int)));
 	GEN_MINE_POSSIBILITY = DEFAULT_GEN_MINE_POSSIBILITY_EASY;
+	_loader->setPossibility(GEN_MINE_POSSIBILITY);
 	_easy->hide();
 	_normal->hide();
 	_hard->hide();
@@ -431,7 +459,20 @@ void MineWorld::_on_easy_clicked()
 }
 void MineWorld::_on_normal_clicked()
 {
+	delete _setting;
+	delete _loader;
+	if (access(DEFAULT_SAVEDATA_PATH, IO_MODE_EXIST) != -1)
+	{
+		RecursiveDelete(DEFAULT_SAVEDATA_PATH);
+	}
+	_loader = new MapLoader();
+	_setting = new QInGameSetting(this, _loader);
+	_setting->setGeometry(rect());
+	connect(_setting, SIGNAL(backToScreenClicked()), this, SLOT(_on_ingame_back_to_screen_clicked()));
+	connect(_setting, SIGNAL(exitClicked()), this, SLOT(_on_ingame_exit_clicked()));
+	connect(_setting, SIGNAL(positionUpdated(int, int)), this, SLOT(_on_position_updated(int, int)));
 	GEN_MINE_POSSIBILITY = DEFAULT_GEN_MINE_POSSIBILITY_NORMAL;
+	_loader->setPossibility(GEN_MINE_POSSIBILITY);
 	_easy->hide();
 	_normal->hide();
 	_hard->hide();
@@ -445,7 +486,20 @@ void MineWorld::_on_normal_clicked()
 }
 void MineWorld::_on_hard_clicked()
 {
+	delete _setting;
+	delete _loader;
+	if (access(DEFAULT_SAVEDATA_PATH, IO_MODE_EXIST) != -1)
+	{
+		RecursiveDelete(DEFAULT_SAVEDATA_PATH);
+	}
+	_loader = new MapLoader();
+	_setting = new QInGameSetting(this, _loader);
+	_setting->setGeometry(rect());
+	connect(_setting, SIGNAL(backToScreenClicked()), this, SLOT(_on_ingame_back_to_screen_clicked()));
+	connect(_setting, SIGNAL(exitClicked()), this, SLOT(_on_ingame_exit_clicked()));
+	connect(_setting, SIGNAL(positionUpdated(int, int)), this, SLOT(_on_position_updated(int, int)));
 	GEN_MINE_POSSIBILITY = DEFAULT_GEN_MINE_POSSIBILITY_HARD;
+	_loader->setPossibility(GEN_MINE_POSSIBILITY);
 	_easy->hide();
 	_normal->hide();
 	_hard->hide();
@@ -475,4 +529,29 @@ void MineWorld::_background_color_change()
 	//触发paint event
 	if (_status >= 0 && _status < 3 || _status == 4)
 		update();
+}
+
+void MineWorld::_on_ingame_back_to_screen_clicked()
+{
+	_dispose_ani_data();
+	_init_ani_data();
+
+	_start_game->show();
+	_new_game->show();
+	_exit->show();
+	_version->show();
+	_title->show();
+
+	_status = 0;
+}
+
+void MineWorld::_on_ingame_exit_clicked()
+{
+	QApplication::exit(0);
+}
+
+void MineWorld::_on_position_updated(int new_x, int new_y)
+{
+	//_loader->setLocation(QPointF(new_x, new_y));
+	update();
 }

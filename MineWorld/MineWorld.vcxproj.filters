@@ -86,12 +86,18 @@
     <ClCompile Include="GeneratedFiles\Release\moc_maploader.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qingamesetting.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qingamesetting.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="qingamesetting.cpp">
+      <Filter>Game Control</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
-      <Filter>gui</Filter>
-    </CustomBuild>
-    <CustomBuild Include="mineworld.qrc">
       <Filter>gui</Filter>
     </CustomBuild>
     <CustomBuild Include="mineworld.ui">
@@ -102,6 +108,12 @@
     </CustomBuild>
     <CustomBuild Include="maploader.h">
       <Filter>Game Control</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qingamesetting.h">
+      <Filter>Game Control</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mineworld.qrc">
+      <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +141,9 @@
     <ClInclude Include="zlib-1.2.11\zlib.h">
       <Filter>zlib-1.2.11-x86-prebuild</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="zlib-1.2.11\zlib.lib">
@@ -139,5 +154,15 @@
     <None Include="zlib-1.2.11\zlib.dll">
       <Filter>zlib-1.2.11-x86-prebuild</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.png" />
+    <Image Include="icon.ico" />
+    <Image Include="icon2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
