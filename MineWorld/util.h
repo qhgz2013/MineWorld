@@ -12,7 +12,7 @@ char* ConvertToByteArray(const T _data)
 
 	_t temp_union;
 	temp_union.data = _data;
-	char* result = debug_new char[sizeof(T)];
+	char* result = new char[sizeof(T)];
 	memcpy_s(result, sizeof(T), temp_union.bytes, sizeof(T));
 	return result;
 }

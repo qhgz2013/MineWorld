@@ -28,7 +28,7 @@ ChunkLoader::~ChunkLoader()
 		{
 			_write_chunk_to_file(i3->first, i3->second, *i1);
 		}
-		debug_delete *i1;
+		delete *i1;
 	}
 }
 
@@ -39,10 +39,10 @@ void ChunkLoader::GetChunkData(int cx, int cy, char**& data)
 	if (!tag_data) return;
 	char* raw_data = (char*)tag_data->GetDataRef();
 
-	data = debug_new char*[size];
+	data = new char*[size];
 	for (int i = 0; i < size; i++)
 	{
-		data[i] = debug_new char[size];
+		data[i] = new char[size];
 		memcpy_s(data[i], size, raw_data + i * size, size);
 	}
 }
@@ -118,8 +118,8 @@ void ChunkLoader::GetBlockData(int bx1, int by1, int bx2, int by2, char**& data)
 	auto c1 = GetChunkPos(bx1, by1);
 	auto c2 = GetChunkPos(bx2, by2);
 
-	data = debug_new char*[xlen];
-	for (int i = 0; i < xlen; i++) data[i] = debug_new char[ylen];
+	data = new char*[xlen];
+	for (int i = 0; i < xlen; i++) data[i] = new char[ylen];
 
 	int chunk_size = 1 << DEFAULT_CHUNK_SIZE;
 	for (int x = c1.first; x <= c2.first; x++)
@@ -295,26 +295,26 @@ Tag * ChunkLoader::_load_chunk_from_file(int chunk_x, int chunk_y)
 	ifs.seekg(0, ios::end);
 	streamoff file_length = ifs.tellg();
 	ifs.seekg(0, ios::beg);
-	auto src_data = debug_new char[file_length];
+	auto src_data = new char[file_length];
 	ifs.read(src_data, file_length);
 	ifs.close();
 	uLong dst_length = 0x200000; //2mb
 	int dst_increment = 0x100000; //1mb increment
 	int code;
-	auto dst_data = debug_new char[dst_length];
+	auto dst_data = new char[dst_length];
 	do
 	{
 		code = uncompress((Byte*)dst_data, (uLong*)&dst_length, (Byte*)src_data, file_length);
 		if (code == Z_BUF_ERROR)
 		{
-			debug_delete[] dst_data;
+			delete[] dst_data;
 			dst_length += dst_increment;
-			dst_data = debug_new char[dst_length];
+			dst_data = new char[dst_length];
 		}
 		else if (code == Z_DATA_ERROR || code == Z_MEM_ERROR) //out of memory or data invalid
 		{
-			debug_delete[] src_data;
-			debug_delete[] dst_data;
+			delete[] src_data;
+			delete[] dst_data;
 			return nullptr;
 		}
 	} while (code != Z_OK);
@@ -322,8 +322,8 @@ Tag * ChunkLoader::_load_chunk_from_file(int chunk_x, int chunk_y)
 	stringstream ss;
 	ss.write(dst_data, dst_length);
 
-	debug_delete[] src_data;
-	debug_delete[] dst_data;
+	delete[] src_data;
+	delete[] dst_data;
 
 	TagList* tag_list = (TagList*)Tag::ReadTagFromStream(ss);
 
@@ -335,9 +335,9 @@ Tag * ChunkLoader::_load_chunk_from_file(int chunk_x, int chunk_y)
 
 	//这里可以插入存档版本的升级代码
 
-	debug_delete str_version;
-	debug_delete tag_version;
-	debug_delete tag_list;
+	delete str_version;
+	delete tag_version;
+	delete tag_list;
 
 	return tag_data;
 }
@@ -353,9 +353,9 @@ void ChunkLoader::_write_chunk_to_file(int chunk_x, int chunk_y, Tag * data)
 
 	sprintf(filename + index, DEFAULT_SAVEDATA_FMT, chunk_x, chunk_y);
 
-	TagList* tag_list = debug_new TagList("svd");
-	TagString* tag_version = debug_new TagString("version");
-	string* str_version = debug_new string(DATA_VERSION);
+	TagList* tag_list = new TagList("svd");
+	TagString* tag_version = new TagString("version");
+	string* str_version = new string(DATA_VERSION);
 	tag_version->SetData((const void*&)str_version);
 	TagByteArray* tag_data = (TagByteArray*)data;
 	tag_data->SetName(string("chunkdata"));
@@ -365,27 +365,27 @@ void ChunkLoader::_write_chunk_to_file(int chunk_x, int chunk_y, Tag * data)
 	stringstream ss;
 	Tag::WriteTagFromStream(ss, *tag_list);
 	streamoff src_length = ss.tellp();
-	auto src_data = debug_new char[src_length];
+	auto src_data = new char[src_length];
 	ss.read(src_data, src_length);
 
-	auto dst_data = debug_new char[src_length];
+	auto dst_data = new char[src_length];
 	uLong dst_length = (uLong)src_length;
 
 	int code = compress((Byte*)dst_data, (uLongf*)&dst_length, (Byte*)src_data, src_length);
-	debug_delete[] src_data;
+	delete[] src_data;
 	if (code != Z_OK)
 	{
-		debug_delete[] dst_data;
+		delete[] dst_data;
 		return;
 	}
 
 	ofstream ofs(filename, ios::binary | ios::out);
 	ofs.write(dst_data, dst_length);
 	ofs.close();
-	debug_delete tag_version;
-	debug_delete str_version;
-	debug_delete tag_list;
-	debug_delete[] dst_data;
+	delete tag_version;
+	delete str_version;
+	delete tag_list;
+	delete[] dst_data;
 }
 
 void ChunkLoader::_add_to_memory(int chunk_x, int chunk_y, Tag * data, bool data_changed)
@@ -436,7 +436,7 @@ void ChunkLoader::_unload_data(int chunk_x, int chunk_y)
 	{
 		_write_chunk_to_file(i1->first, i1->second, *i2);
 	}
-	debug_delete *i2;
+	delete *i2;
 	_loaded_pos.erase(i1);
 	_loaded_data.erase(i2);
 	_last_access.erase(i3);

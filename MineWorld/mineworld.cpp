@@ -426,7 +426,6 @@ void MineWorld::_on_new_game_clicked()
 	_easy->show();
 	_normal->show();
 	_hard->show();
-	_loader->clearStatistics();
 	_status = 4;
 }
 

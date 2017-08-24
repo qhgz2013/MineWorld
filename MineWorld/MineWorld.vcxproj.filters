@@ -43,9 +43,6 @@
     <ClCompile Include="GeneratedFiles\qrc_mineworld.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="pointer_check.cpp">
-      <Filter>Global Pointer Management</Filter>
-    </ClCompile>
     <ClCompile Include="nbt.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -95,6 +92,9 @@
     <ClCompile Include="qingamesetting.cpp">
       <Filter>Game Control</Filter>
     </ClCompile>
+    <ClCompile Include="pointer_check.cpp">
+      <Filter>Global Pointer Management</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="mineworld.h">
@@ -120,9 +120,6 @@
     <ClInclude Include="GeneratedFiles\ui_mineworld.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="pointer_check.h">
-      <Filter>Global Pointer Management</Filter>
-    </ClInclude>
     <ClInclude Include="util.h">
       <Filter>utils</Filter>
     </ClInclude>
@@ -143,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pointer_check.h">
+      <Filter>Global Pointer Management</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

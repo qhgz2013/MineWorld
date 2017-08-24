@@ -21,6 +21,13 @@ int main(int argc, char *argv[])
 	uint64_t after_pointer = allocated_block;
 	if (after_pointer > before_pointer)
 	{
+		auto data = get_leak_memory();
+		for (auto i = data.begin(); i != data.end(); i++)
+		{
+			char buf[200];
+			sprintf_s(buf, "File: %s, Line: %d, Size: %d, Ptr: %p\r\n", i->file, i->line, i->size, i->pointer);
+			OutputDebugStringA(buf);
+		}
 		return 1; //memory leak
 	}
 

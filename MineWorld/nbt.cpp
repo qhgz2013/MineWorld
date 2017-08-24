@@ -11,7 +11,7 @@ void Tag::_write_header(std::ostream & s) const
 	else name_length = (uint16_t)name_length_origin;
 	char* length = ConvertToByteArray(name_length);
 	s.write(length, 2);
-	debug_delete[] length;
+	delete[] length;
 	s.write(_name.c_str(), name_length);
 }
 
@@ -24,7 +24,7 @@ Tag * Tag::ReadTagFromStream(std::istream & s)
 	char name_length_data[2];
 	s.read(name_length_data, 2);
 	uint16_t name_length = ConvertFromByteArray<int>(name_length_data);
-	char* name = debug_new char[name_length + 1];
+	char* name = new char[name_length + 1];
 	s.read(name, name_length);
 	name[name_length] = 0;
 
@@ -33,34 +33,34 @@ Tag * Tag::ReadTagFromStream(std::istream & s)
 	case TagType::Tag_Undefined:
 		break;
 	case TagType::Tag_Int:
-		ret = debug_new TagInt(name);
+		ret = new TagInt(name);
 		break;
 	case TagType::Tag_Long:
-		ret = debug_new TagLong(name);
+		ret = new TagLong(name);
 		break;
 	case TagType::Tag_Float:
-		ret = debug_new TagFloat(name);
+		ret = new TagFloat(name);
 		break;
 	case TagType::Tag_Double:
-		ret = debug_new TagDouble(name);
+		ret = new TagDouble(name);
 		break;
 	case TagType::Tag_UInt:
-		ret = debug_new TagUInt(name);
+		ret = new TagUInt(name);
 		break;
 	case TagType::Tag_ULong:
-		ret = debug_new TagULong(name);
+		ret = new TagULong(name);
 		break;
 	case TagType::Tag_Byte:
-		ret = debug_new TagByte(name);
+		ret = new TagByte(name);
 		break;
 	case TagType::Tag_String:
-		ret = debug_new TagString(name);
+		ret = new TagString(name);
 		break;
 	case TagType::Tag_Byte_Array:
-		ret = debug_new TagByteArray(name);
+		ret = new TagByteArray(name);
 		break;
 	case TagType::Tag_List:
-		ret = debug_new TagList(name);
+		ret = new TagList(name);
 		break;
 	default:
 		break;
@@ -69,7 +69,7 @@ Tag * Tag::ReadTagFromStream(std::istream & s)
 	{
 		ret->_read_data(s);
 	}
-	debug_delete[] name;
+	delete[] name;
 	return ret;
 }
 
@@ -87,34 +87,34 @@ Tag * Tag::CopyTag(const Tag * tag)
 	case TagType::Tag_Undefined:
 		break;
 	case TagType::Tag_Int:
-		ret = debug_new TagInt(*(TagInt*)tag);
+		ret = new TagInt(*(TagInt*)tag);
 		break;
 	case TagType::Tag_Long:
-		ret = debug_new TagLong(*(TagLong*)tag);
+		ret = new TagLong(*(TagLong*)tag);
 		break;
 	case TagType::Tag_Float:
-		ret = debug_new TagFloat(*(TagFloat*)tag);
+		ret = new TagFloat(*(TagFloat*)tag);
 		break;
 	case TagType::Tag_Double:
-		ret = debug_new TagDouble(*(TagDouble*)tag);
+		ret = new TagDouble(*(TagDouble*)tag);
 		break;
 	case TagType::Tag_UInt:
-		ret = debug_new TagUInt(*(TagUInt*)tag);
+		ret = new TagUInt(*(TagUInt*)tag);
 		break;
 	case TagType::Tag_ULong:
-		ret = debug_new TagULong(*(TagULong*)tag);
+		ret = new TagULong(*(TagULong*)tag);
 		break;
 	case TagType::Tag_Byte:
-		ret = debug_new TagByte(*(TagByte*)tag);
+		ret = new TagByte(*(TagByte*)tag);
 		break;
 	case TagType::Tag_String:
-		ret = debug_new TagString(*(TagString*)tag);
+		ret = new TagString(*(TagString*)tag);
 		break;
 	case TagType::Tag_Byte_Array:
-		ret = debug_new TagByteArray(*(TagByteArray*)tag);
+		ret = new TagByteArray(*(TagByteArray*)tag);
 		break;
 	case TagType::Tag_List:
-		ret = debug_new TagList(*(TagList*)tag);
+		ret = new TagList(*(TagList*)tag);
 		break;
 	default:
 		break;
@@ -129,11 +129,11 @@ TagInt & TagInt::operator=(const TagInt & tag)
 		if (_data)
 			*((int*)_data) = *((int*)tag._data);
 		else
-			_data = debug_new int(*(int*)tag._data);
+			_data = new int(*(int*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(int*)_data; _data = nullptr;
+			delete(int*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -144,14 +144,14 @@ void TagInt::_read_data(std::istream & s)
 {
 	char buf[4];
 	s.read(buf, 4);
-	_data = debug_new int(ConvertFromByteArray<int>(buf));
+	_data = new int(ConvertFromByteArray<int>(buf));
 }
 
 void TagInt::_write_data(std::ostream & s) const
 {
 	char* data = ConvertToByteArray<int>(_data ? (*(int*)_data) : 0i32);
 	s.write(data, 4);
-	debug_delete[] data;
+	delete[] data;
 }
 
 TagLong & TagLong::operator=(const TagLong & tag)
@@ -161,11 +161,11 @@ TagLong & TagLong::operator=(const TagLong & tag)
 		if (_data)
 			*((int64_t*)_data) = *((int64_t*)tag._data);
 		else
-			_data = debug_new int64_t(*(int64_t*)tag._data);
+			_data = new int64_t(*(int64_t*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(int64_t*)_data; _data = nullptr;
+			delete(int64_t*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -176,14 +176,14 @@ void TagLong::_read_data(std::istream & s)
 {
 	char buf[8];
 	s.read(buf, 8);
-	_data = debug_new int64_t(ConvertFromByteArray<int64_t>(buf));
+	_data = new int64_t(ConvertFromByteArray<int64_t>(buf));
 }
 
 void TagLong::_write_data(std::ostream & s) const
 {
 	char* data = ConvertToByteArray<int64_t>(_data ? (*(int64_t*)_data) : 0i64);
 	s.write(data, 8);
-	debug_delete[] data;
+	delete[] data;
 }
 
 TagFloat & TagFloat::operator=(const TagFloat & tag)
@@ -193,11 +193,11 @@ TagFloat & TagFloat::operator=(const TagFloat & tag)
 		if (_data)
 			*((float*)_data) = *((float*)tag._data);
 		else
-			_data = debug_new float(*(float*)tag._data);
+			_data = new float(*(float*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(float*)_data; _data = nullptr;
+			delete(float*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -208,14 +208,14 @@ void TagFloat::_read_data(std::istream & s)
 {
 	char buf[4];
 	s.read(buf, 4);
-	_data = debug_new float(ConvertFromByteArray<float>(buf));
+	_data = new float(ConvertFromByteArray<float>(buf));
 }
 
 void TagFloat::_write_data(std::ostream & s) const
 {
 	char* data = ConvertToByteArray<float>(_data ? (*(float*)_data) : 0.0f);
 	s.write(data, 4);
-	debug_delete[] data;
+	delete[] data;
 }
 
 TagDouble & TagDouble::operator=(const TagDouble & tag)
@@ -225,11 +225,11 @@ TagDouble & TagDouble::operator=(const TagDouble & tag)
 		if (_data)
 			*((double*)_data) = *((double*)tag._data);
 		else
-			_data = debug_new double(*(double*)tag._data);
+			_data = new double(*(double*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(double*)_data; _data = nullptr;
+			delete(double*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -240,14 +240,14 @@ void TagDouble::_read_data(std::istream & s)
 {
 	char buf[8];
 	s.read(buf, 8);
-	_data = debug_new double(ConvertFromByteArray<double>(buf));
+	_data = new double(ConvertFromByteArray<double>(buf));
 }
 
 void TagDouble::_write_data(std::ostream & s) const
 {
 	char* data = ConvertToByteArray<double>(_data ? (*(double*)_data) : 0.0);
 	s.write(data, 8);
-	debug_delete[] data;
+	delete[] data;
 }
 
 TagUInt & TagUInt::operator=(const TagUInt & tag)
@@ -257,11 +257,11 @@ TagUInt & TagUInt::operator=(const TagUInt & tag)
 		if (_data)
 			*((uint32_t*)_data) = *((uint32_t*)tag._data);
 		else
-			_data = debug_new uint32_t(*(uint32_t*)tag._data);
+			_data = new uint32_t(*(uint32_t*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(uint32_t*)_data; _data = nullptr;
+			delete(uint32_t*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -279,7 +279,7 @@ void TagUInt::_write_data(std::ostream & s) const
 {
 	char* data = ConvertToByteArray<uint32_t>(_data ? (*(uint32_t*)_data) : 0ui32);
 	s.write(data, 4);
-	debug_delete[] data;
+	delete[] data;
 }
 
 TagULong & TagULong::operator=(const TagULong & tag)
@@ -289,11 +289,11 @@ TagULong & TagULong::operator=(const TagULong & tag)
 		if (_data)
 			*((uint64_t*)_data) = *((uint64_t*)tag._data);
 		else
-			_data = debug_new uint64_t(*(uint64_t*)tag._data);
+			_data = new uint64_t(*(uint64_t*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(uint64_t*)_data; _data = nullptr;
+			delete(uint64_t*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -304,14 +304,14 @@ void TagULong::_read_data(std::istream & s)
 {
 	char buf[8];
 	s.read(buf, 8);
-	_data = debug_new uint64_t(ConvertFromByteArray<uint64_t>(buf));
+	_data = new uint64_t(ConvertFromByteArray<uint64_t>(buf));
 }
 
 void TagULong::_write_data(std::ostream & s) const
 {
 	char* data = ConvertToByteArray<uint64_t>(_data ? (*(uint64_t*)_data) : 0ui64);
 	s.write(data, 8);
-	debug_delete[] data;
+	delete[] data;
 }
 
 TagByte & TagByte::operator=(const TagByte & tag)
@@ -321,11 +321,11 @@ TagByte & TagByte::operator=(const TagByte & tag)
 		if (_data)
 			*((char*)_data) = *((char*)tag._data);
 		else
-			_data = debug_new char(*(char*)tag._data);
+			_data = new char(*(char*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(char*)_data; _data = nullptr;
+			delete(char*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -336,7 +336,7 @@ void TagByte::_read_data(std::istream & s)
 {
 	char buf;
 	s.read(&buf, 1);
-	_data = debug_new char(buf);
+	_data = new char(buf);
 }
 
 void TagByte::_write_data(std::ostream & s) const
@@ -352,11 +352,11 @@ TagString & TagString::operator=(const TagString & tag)
 		if (_data)
 			*((std::string*)_data) = *((std::string*)tag._data);
 		else
-			_data = debug_new std::string(*(std::string*)tag._data);
+			_data = new std::string(*(std::string*)tag._data);
 	else
 		if (_data)
 		{
-			debug_delete(std::string*)_data; _data = nullptr;
+			delete(std::string*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -368,11 +368,11 @@ void TagString::_read_data(std::istream & s)
 	char len_buf[4];
 	s.read(len_buf, 4);
 	uint32_t len = ConvertFromByteArray<uint32_t>(len_buf);
-	char* buf = debug_new char[len + 1];
+	char* buf = new char[len + 1];
 	s.read(buf, len);
 	buf[len] = 0;
-	_data = debug_new std::string(buf);
-	debug_delete[] buf;
+	_data = new std::string(buf);
+	delete[] buf;
 }
 
 void TagString::_write_data(std::ostream & s) const
@@ -384,7 +384,7 @@ void TagString::_write_data(std::ostream & s) const
 	else len = (uint32_t)len_origin;
 	char* len_data = ConvertToByteArray<uint32_t>(len);
 	s.write(len_data, 4);
-	debug_delete[] len_data;
+	delete[] len_data;
 	if (data) s.write(data->c_str(), len);
 }
 
@@ -395,19 +395,19 @@ TagByteArray & TagByteArray::operator=(const TagByteArray & tag)
 	if (tag._data)
 		if (_data)
 		{
-			debug_delete[](char*)_data;
-			_data = debug_new char[_count];
+			delete[](char*)_data;
+			_data = new char[_count];
 			memcpy_s(_data, _count, tag._data, _count);
 		}
 		else
 		{
-			_data = debug_new char[_count];
+			_data = new char[_count];
 			memcpy_s(_data, _count, tag._data, _count);
 		}
 	else
 		if (_data)
 		{
-			debug_delete[](char*)_data; _data = nullptr;
+			delete[](char*)_data; _data = nullptr;
 		}
 		else
 			_data = nullptr;
@@ -420,7 +420,7 @@ void TagByteArray::_read_data(std::istream & s)
 	s.read(len_data, 4);
 	_count = ConvertFromByteArray<uint32_t>(len_data);
 
-	char *data = debug_new char[_count];
+	char *data = new char[_count];
 	s.read(data, _count);
 	_data = data;
 }
@@ -429,7 +429,7 @@ void TagByteArray::_write_data(std::ostream & s) const
 {
 	char* len_data = ConvertToByteArray<uint32_t>(_count);
 	s.write(len_data, 4);
-	debug_delete[] len_data;
+	delete[] len_data;
 	char* data = (char*)_data;
 	if (data) s.write(data, _count);
 }
@@ -442,14 +442,14 @@ TagList & TagList::operator=(const TagList & tag)
 		{
 			TagContainer* data = (TagContainer*)_data;
 			for (auto i = data->begin(); i != data->end(); i++)
-				debug_delete *i;
+				delete *i;
 			data->clear();
 			for (auto i = ((TagContainer*)tag._data)->begin(); i != ((TagContainer*)tag._data)->end(); i++)
 				data->push_back(Tag::CopyTag(*i));
 		}
 		else
 		{
-			_data = debug_new TagContainer;
+			_data = new TagContainer;
 			TagContainer* data = (TagContainer*)_data;
 			for (auto i = ((TagContainer*)tag._data)->begin(); i != ((TagContainer*)tag._data)->end(); i++)
 				data->push_back(Tag::CopyTag(*i));
@@ -459,8 +459,8 @@ TagList & TagList::operator=(const TagList & tag)
 		{
 			TagContainer* data = (TagContainer*)_data;
 			for (auto i = data->begin(); i != data->end(); i++)
-				debug_delete *i;
-			debug_delete data;
+				delete *i;
+			delete data;
 			_data = nullptr;
 		}
 		else
@@ -480,7 +480,7 @@ void TagList::SetData(Tag * tag)
 			}
 		}
 
-	if (!_data) _data = debug_new TagContainer;
+	if (!_data) _data = new TagContainer;
 	((TagContainer*)_data)->push_back(Tag::CopyTag(tag));
 }
 
@@ -498,7 +498,7 @@ bool TagList::Exists(std::string & tagname) const
 void TagList::AddData(Tag * tag)
 {
 	if (!_data)
-		_data = debug_new TagContainer;
+		_data = new TagContainer;
 	((TagContainer*)_data)->push_back(Tag::CopyTag(tag));
 }
 
@@ -521,12 +521,12 @@ void TagList::_read_data(std::istream & s)
 	char len_data[4];
 	s.read(len_data, 4);
 	uint32_t len = ConvertFromByteArray<uint32_t>(len_data);
-	if (!_data) _data = debug_new TagContainer;
+	if (!_data) _data = new TagContainer;
 	else 
 	{
 		for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end(); i++)
 		{
-			debug_delete *i;
+			delete *i;
 		}
 		((TagContainer*)_data)->clear();
 	}
@@ -545,7 +545,7 @@ void TagList::_write_data(std::ostream & s) const
 
 	char* len_data = ConvertToByteArray<uint32_t>(len);
 	s.write(len_data, 4);
-	debug_delete[] len_data;
+	delete[] len_data;
 	uint32_t count = 0;
 	if (_data)
 		for (auto i = ((TagContainer*)_data)->begin(); i != ((TagContainer*)_data)->end() && count < len; i++, count++)

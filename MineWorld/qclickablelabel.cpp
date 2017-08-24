@@ -2,6 +2,7 @@
 #include <QMouseEvent>
 #include <qpainter.h>
 #include "util.h"
+#include <Windows.h>
 using namespace std;
 
 QClickableLabel::QClickableLabel(const QString& text, QWidget *parent, bool visible)
@@ -17,6 +18,7 @@ QClickableLabel::QClickableLabel(const QString& text, QWidget *parent, bool visi
 	_entered = false;
 	_leave_time = fGetCurrentTimestamp() - _color_change_duration;
 	_enter_time = 0;
+	_enable_hover_animation = true;
 	setCursor(Qt::CursorShape::PointingHandCursor);
 
 	setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -100,7 +102,7 @@ void QClickableLabel::paintEvent(QPaintEvent * event)
 		(int)(from_color.green() + (to_color.green() - from_color.green()) * stat),
 		(int)(from_color.blue() + (to_color.blue() - from_color.blue()) * stat)
 	);
-	
+
 	if (_enable_hover_animation)
 	{
 		const int border_size = 2;

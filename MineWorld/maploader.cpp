@@ -154,7 +154,7 @@ Tag * MapLoader::_chunk_gen_cb(void* sender, int cx, int cy)
 {
 	int size = 1 << DEFAULT_CHUNK_SIZE;
 	size *= size;
-	char* data = debug_new char[size];
+	char* data = new char[size];
 	//char structure:
 	//
 	// Generated Mask Data
@@ -173,8 +173,8 @@ Tag * MapLoader::_chunk_gen_cb(void* sender, int cx, int cy)
 			data[i] = 0x10;
 	}
 
-	Tag* ret = debug_new TagByteArray(string("chunkdata"), data, size);
-	debug_delete[] data;
+	Tag* ret = new TagByteArray(string("chunkdata"), data, size);
+	delete[] data;
 	return ret;
 }
 
@@ -229,67 +229,67 @@ void MapLoader::_load_config()
 
 	//这里可以插入存档版本的升级代码
 
-	if (str_version) debug_delete str_version;
-	if (tag_version) debug_delete tag_version;
+	if (str_version) delete str_version;
+	if (tag_version) delete tag_version;
 
 	double* x = nullptr;
 	double* y = nullptr;
 	if (tag_px) tag_px->GetData((void*&)x);
 	if (tag_py) tag_py->GetData((void*&)y);
-	if (!x) x = debug_new double(0);
-	if (!y) y = debug_new double(0);
+	if (!x) x = new double(0);
+	if (!y) y = new double(0);
 	_location = QPointF(*x, *y);
 
-	debug_delete x;
-	debug_delete y;
-	if (tag_px) debug_delete tag_px;
-	if (tag_py) debug_delete tag_py;
+	delete x;
+	delete y;
+	if (tag_px) delete tag_px;
+	if (tag_py) delete tag_py;
 
 	int* possibility = nullptr;
 	if (tag_possibility) tag_possibility->GetData((void*&)possibility);
 	if (possibility) _possibility = *possibility;
 	else _possibility = GEN_MINE_POSSIBILITY;
 
-	if (possibility) debug_delete possibility;
-	if (tag_possibility) debug_delete tag_possibility;
+	if (possibility) delete possibility;
+	if (tag_possibility) delete tag_possibility;
 
 	double* block_size = nullptr;
 	if (tag_block_size) tag_block_size->GetData((void*&)block_size);
 	if (block_size) _block_size = *block_size;
-	if (block_size) debug_delete block_size;
-	if (tag_block_size) debug_delete tag_block_size;
+	if (block_size) delete block_size;
+	if (tag_block_size) delete tag_block_size;
 
 	uint64_t* cleared_block = nullptr;
 	if (tag_cleared_block) tag_cleared_block->GetData((void*&)cleared_block);
 	if (cleared_block) _cleared_block = *cleared_block;
-	if (cleared_block) debug_delete cleared_block;
-	if (tag_cleared_block) debug_delete tag_cleared_block;
+	if (cleared_block) delete cleared_block;
+	if (tag_cleared_block) delete tag_cleared_block;
 
 	uint64_t* flag_made = nullptr;
 	if (tag_flag_made) tag_flag_made->GetData((void*&)flag_made);
 	if (flag_made) _flag_made = *flag_made;
-	if (flag_made) debug_delete flag_made;
-	if (tag_flag_made) debug_delete tag_flag_made;
+	if (flag_made) delete flag_made;
+	if (tag_flag_made) delete tag_flag_made;
 
 	uint64_t* unknown_made = nullptr;
 	if (tag_unknown_made) tag_unknown_made->GetData((void*&)unknown_made);
 	if (unknown_made) _unknown_made = *unknown_made;
-	if (unknown_made) debug_delete unknown_made;
-	if (tag_unknown_made) debug_delete tag_unknown_made;
+	if (unknown_made) delete unknown_made;
+	if (tag_unknown_made) delete tag_unknown_made;
 
 	uint64_t* mine_clicked = nullptr;
 	if (tag_mine_clicked) tag_mine_clicked->GetData((void*&)mine_clicked);
 	if (mine_clicked) _mine_clicked = *mine_clicked;
-	if (mine_clicked) debug_delete mine_clicked;
-	if (tag_mine_clicked) debug_delete tag_mine_clicked;
+	if (mine_clicked) delete mine_clicked;
+	if (tag_mine_clicked) delete tag_mine_clicked;
 
 	double* time_played = nullptr;
 	if (tag_time_played) tag_time_played->GetData((void*&)time_played);
 	if (time_played) _time_played = *time_played;
-	if (time_played) debug_delete time_played;
-	if (tag_time_played) debug_delete tag_time_played;
+	if (time_played) delete time_played;
+	if (tag_time_played) delete tag_time_played;
 
-	debug_delete tag_list;
+	delete tag_list;
 	ifs.close();
 }
 
@@ -305,18 +305,18 @@ void MapLoader::_save_config()
 	sprintf(filename + index, DEFAULT_SAVEDATA_SETTING_FMT);
 
 	ofstream ofs(filename, ios::binary | ios::out);
-	TagList* tag_list = debug_new TagList("settings");
+	TagList* tag_list = new TagList("settings");
 
-	TagString* tag_version = debug_new TagString(string("version"), string("1.0.0"));
-	TagDouble* px = debug_new TagDouble(string("position-x"), _location.x());
-	TagDouble* py = debug_new TagDouble(string("position-y"), _location.y());
-	TagDouble* block_size = debug_new TagDouble(string("block-size"), _block_size);
-	TagInt* possibility = debug_new TagInt(string("possibility"), _possibility);
-	TagULong* cleared_block = debug_new TagULong(string("cleared-block"), _cleared_block);
-	TagULong* flag_made = debug_new TagULong(string("flag-made"), _flag_made);
-	TagULong* unknown_made = debug_new TagULong(string("unknown-made"), _unknown_made);
-	TagULong* mine_clicked = debug_new TagULong(string("mine-clicked"), _mine_clicked);
-	TagDouble* time_played = debug_new TagDouble(string("time-played"), _time_played);
+	TagString* tag_version = new TagString(string("version"), string("1.0.0"));
+	TagDouble* px = new TagDouble(string("position-x"), _location.x());
+	TagDouble* py = new TagDouble(string("position-y"), _location.y());
+	TagDouble* block_size = new TagDouble(string("block-size"), _block_size);
+	TagInt* possibility = new TagInt(string("possibility"), _possibility);
+	TagULong* cleared_block = new TagULong(string("cleared-block"), _cleared_block);
+	TagULong* flag_made = new TagULong(string("flag-made"), _flag_made);
+	TagULong* unknown_made = new TagULong(string("unknown-made"), _unknown_made);
+	TagULong* mine_clicked = new TagULong(string("mine-clicked"), _mine_clicked);
+	TagDouble* time_played = new TagDouble(string("time-played"), _time_played);
 
 	tag_list->AddData(tag_version);
 	tag_list->AddData(px);
@@ -329,19 +329,19 @@ void MapLoader::_save_config()
 	tag_list->AddData(mine_clicked);
 	tag_list->AddData(time_played);
 
-	debug_delete tag_version;
-	debug_delete px;
-	debug_delete py;
-	debug_delete block_size;
-	debug_delete possibility;
-	debug_delete cleared_block;
-	debug_delete flag_made;
-	debug_delete unknown_made;
-	debug_delete mine_clicked;
-	debug_delete time_played;
+	delete tag_version;
+	delete px;
+	delete py;
+	delete block_size;
+	delete possibility;
+	delete cleared_block;
+	delete flag_made;
+	delete unknown_made;
+	delete mine_clicked;
+	delete time_played;
 
 	Tag::WriteTagFromStream(ofs, *tag_list);
-	debug_delete tag_list;
+	delete tag_list;
 
 	ofs.close();
 }
@@ -412,8 +412,8 @@ void MapLoader::_gen_mask(int cx, int cy)
 	_cl->SetBlockData((cx << DEFAULT_CHUNK_SIZE) - 1, (cy << DEFAULT_CHUNK_SIZE) - 1, (cx + 1) << DEFAULT_CHUNK_SIZE, (cy + 1) << DEFAULT_CHUNK_SIZE, (const char**&)data);
 
 	for (int i = 0; i < size; i++)
-		debug_delete[] data[i];
-	debug_delete[] data;
+		delete[] data[i];
+	delete[] data;
 }
 
 void MapLoader::_load_map(char **& data, QPointF& pt)
@@ -452,12 +452,12 @@ void MapLoader::_draw_block(QPoint block, char data, QPainter & p)
 
 MapLoader::MapLoader(int possibility)
 {
-	_cl = debug_new ChunkLoader(_chunk_gen_cb, this);
+	_cl = new ChunkLoader(_chunk_gen_cb, this);
 	_location = QPointF(0, 0);
 	_block_size = 16;
 	_thumbnail_cache = nullptr;
-	_mine_icon = debug_new QImage(":/MineWorld/icon.png");
-	_flag_icon = debug_new QImage(":/MineWorld/icon2.png");
+	_mine_icon = new QImage(":/MineWorld/icon.png");
+	_flag_icon = new QImage(":/MineWorld/icon2.png");
 	_width = 0;
 	_height = 0;
 	_cache_map = nullptr;
@@ -478,20 +478,20 @@ MapLoader::~MapLoader()
 {
 	_time_played += fGetCurrentTimestamp() - _ctor_time;
 	_save_config();
-	if (_cl) debug_delete _cl;
+	if (_cl) delete _cl;
 	_cl = nullptr;
-	if (_mine_icon) debug_delete _mine_icon;
+	if (_mine_icon) delete _mine_icon;
 	_mine_icon = nullptr;
-	if (_flag_icon) debug_delete _flag_icon;
+	if (_flag_icon) delete _flag_icon;
 	_flag_icon = nullptr;
 	if (_thumbnail_cache)
 	{
 		for (int i = 0; i < 256; i++)
-			debug_delete _thumbnail_cache[i];
-		debug_delete[] _thumbnail_cache;
+			delete _thumbnail_cache[i];
+		delete[] _thumbnail_cache;
 	}
 	_thumbnail_cache = nullptr;
-	if (_cache_map) debug_delete _cache_map;
+	if (_cache_map) delete _cache_map;
 	_cache_map = nullptr;
 }
 
@@ -505,11 +505,11 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 		QFuture<QImage> task = QtConcurrent::mapped(ls, _render_thumbnail);
 		task.waitForFinished();
 
-		_thumbnail_cache = debug_new QImage*[256];
+		_thumbnail_cache = new QImage*[256];
 		auto i1 = ls.begin();
 		auto i2 = task.begin();
 		for (; i1 != ls.end(); i1++, i2++)
-			_thumbnail_cache[(unsigned char)i1->code] = debug_new QImage(*i2);
+			_thumbnail_cache[(unsigned char)i1->code] = new QImage(*i2);
 	}
 
 	//这里改成先在cache_image绘图，再复制到窗体
@@ -527,8 +527,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			y2 = floor(_cache_location.y() + _height / _block_size);
 			dx = x2 - x1;
 			dy = y2 - y1;
-			QImage* temp = debug_new QImage(_width, _height, QImage::Format::Format_ARGB32);
-			QPainter* temp2 = debug_new QPainter(temp);
+			QImage* temp = new QImage(_width, _height, QImage::Format::Format_ARGB32);
+			QPainter* temp2 = new QPainter(temp);
 			int w = min(_width, _cache_width), h = min(_height, _cache_height);
 			temp2->drawImage(QRect(0, 0, w, h), *_cache_map, QRect(0, 0, w, h));
 			//part redraw
@@ -559,8 +559,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			}
 			_cache_width = _width;
 			_cache_height = _height;
-			debug_delete temp2;
-			debug_delete _cache_map;
+			delete temp2;
+			delete _cache_map;
 			_cache_map = temp;
 		}
 		else
@@ -572,8 +572,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			y2 = floor(_location.y() + _height / _block_size);
 			dx = x2 - x1;
 			dy = y2 - y1;
-			_cache_map = debug_new QImage(_width, _height, QImage::Format::Format_ARGB32);
-			QPainter* temp = debug_new QPainter(_cache_map);
+			_cache_map = new QImage(_width, _height, QImage::Format::Format_ARGB32);
+			QPainter* temp = new QPainter(_cache_map);
 			_cache_width = _width;
 			_cache_height = _height;
 			_cache_location = _location;
@@ -587,11 +587,11 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 					temp->drawImage(QRect(floor(pos.x()), floor(pos.y()), (int)_block_size, (int)_block_size), *img);
 				}
 			}
-			debug_delete temp;
+			delete temp;
 		}
 		for (int i = 0; i <= dx; i++)
-			debug_delete[] data[i];
-		debug_delete[] data;
+			delete[] data[i];
+		delete[] data;
 		data = nullptr;
 	}
 #pragma endregion
@@ -640,8 +640,8 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			dst.setHeight(_height - dy);
 		}
 
-		QImage* temp = debug_new QImage(_width, _height, QImage::Format::Format_ARGB32);
-		QPainter* temp2 = debug_new QPainter(temp);
+		QImage* temp = new QImage(_width, _height, QImage::Format::Format_ARGB32);
+		QPainter* temp2 = new QPainter(temp);
 		temp2->drawImage(dst, *_cache_map, src);
 
 		int xc1 = floor(_location.x() + dst.x() / _block_size);
@@ -682,12 +682,12 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 		}
 
 		_cache_location = _location;
-		debug_delete temp2;
-		debug_delete _cache_map;
+		delete temp2;
+		delete _cache_map;
 		_cache_map = temp;
 		for (int i = 0; i <= dx; i++)
-			debug_delete[] data[i];
-		debug_delete[] data;
+			delete[] data[i];
+		delete[] data;
 		data = nullptr;
 	}
 #pragma endregion
