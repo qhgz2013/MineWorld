@@ -454,7 +454,7 @@ MapLoader::MapLoader(int possibility)
 {
 	_cl = new ChunkLoader(_chunk_gen_cb, this);
 	_location = QPointF(0, 0);
-	_block_size = 16;
+	_block_size = 20;
 	_thumbnail_cache = nullptr;
 	_mine_icon = new QImage(":/MineWorld/icon.png");
 	_flag_icon = new QImage(":/MineWorld/icon2.png");

@@ -14,7 +14,7 @@ QInGameSetting::QInGameSetting(QWidget* parent, MapLoader* loader): QLabel(paren
 	QPalette p;
 	p.setColor(QPalette::Foreground, Qt::white);
 	_menu_title->setPalette(p);
-	_back_to_screen = new QClickableLabel("Back To Screen", this, false);
+	_back_to_screen = new QClickableLabel("Back To Title", this, false);
 	_back_to_screen->setFont(QFont("Trajan Pro 3", 16));
 	_back_to_screen->setHoverColor(QColor(255, 165, 0));
 	_back_to_screen->setGeometry(QRect(300, 70, 200, 30));
@@ -159,7 +159,7 @@ void QInGameSetting::_on_position_input_changed()
 		_loader->setLocation(QPointF(x, y));
 		_mini_map = new QImage(_loader->renderMiniMap(100, 100));
 
-		emit positionUpdated(x, y);
+		//emit positionUpdated(x, y);
 	}
 }
 void QInGameSetting::_on_timer_tick()
