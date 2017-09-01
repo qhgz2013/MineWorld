@@ -454,7 +454,7 @@ MapLoader::MapLoader(int possibility)
 {
 	_cl = new ChunkLoader(_chunk_gen_cb, this);
 	_location = QPointF(0, 0);
-	_block_size = 20;
+	_block_size = 16;
 	_thumbnail_cache = nullptr;
 	_mine_icon = new QImage(":/MineWorld/icon.png");
 	_flag_icon = new QImage(":/MineWorld/icon2.png");
@@ -640,6 +640,18 @@ void MapLoader::renderMap(QPainter& p, QWidget* form)
 			dst.setHeight(_height - dy);
 		}
 
+		if (dst.x() >= _width || dst.y() >= _height || dst.width() < 0 || dst.height() < 0 || dst.x() + dst.width() < 0 || dst.y() + dst.height() < 0)
+		{
+			delete _cache_map;
+			_cache_width = _cache_height = 0;
+			_cache_map = nullptr;
+			for (int i = 0; i <= dx; i++)
+				delete[] data[i];
+			delete[] data;
+			data = nullptr;
+			renderMap(p, form);
+			return;
+		}
 		QImage* temp = new QImage(_width, _height, QImage::Format::Format_ARGB32);
 		QPainter* temp2 = new QPainter(temp);
 		temp2->drawImage(dst, *_cache_map, src);

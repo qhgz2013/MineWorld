@@ -37,7 +37,7 @@ MineWorld::MineWorld(QWidget *parent)
 	_title->setObjectName("_title");
 	_title->setCursor(Qt::CursorShape::ArrowCursor);
 	_title->setEnableHoverAnimation(false);
-	_version = new QClickableLabel("Version: v1.00", this);
+	_version = new QClickableLabel("Version: v1.01", this);
 	_version->setGeometry(QRect(40, 110, 270, 15));
 	_version->setFont(QFont("SimSun", 9));
 	_version->setObjectName("_version");

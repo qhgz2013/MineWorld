@@ -159,7 +159,7 @@ void QInGameSetting::_on_position_input_changed()
 		_loader->setLocation(QPointF(x, y));
 		_mini_map = new QImage(_loader->renderMiniMap(100, 100));
 
-		//emit positionUpdated(x, y);
+		emit positionUpdated(x, y);
 	}
 }
 void QInGameSetting::_on_timer_tick()
